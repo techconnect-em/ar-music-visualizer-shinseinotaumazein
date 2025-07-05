@@ -6,6 +6,8 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+    <!-- パーティクルシステム用ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-particle-system-component@1.0.14/dist/aframe-particle-system-component.min.js"></script>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
@@ -39,6 +41,27 @@
                         animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
                     </a-entity>
                     <a-entity id="equalizer-container"></a-entity>
+                    
+                    <!-- 音楽反応型パーティクルシステム -->
+                    <a-entity id="particle-system1" 
+                        position="0 0.8 0"
+                        particle-system="preset: snow; particleCount: 100; color: #FFD700,#FF6B6B,#4ECDC4; size: 0.3,0.8; velocityValue: 0 2 0; velocitySpread: 1 0 1; accelerationValue: 0 -0.5 0; accelerationSpread: 0.2 0 0.2; maxAge: 3"
+                        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+                    </a-entity>
+                    
+                    <!-- 周囲を回るパーティクル -->
+                    <a-entity id="particle-system2" 
+                        position="1.2 0.2 0"
+                        particle-system="preset: dust; particleCount: 50; color: #FF4757,#5352ED,#FFA502; size: 0.2,0.5; velocityValue: -2 1 0; velocitySpread: 0.5 0.5 0.5; maxAge: 4"
+                        animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
+                    </a-entity>
+                    
+                    <!-- 下から上昇するパーティクル -->
+                    <a-entity id="particle-system3" 
+                        position="0 -0.8 0"
+                        particle-system="preset: snow; particleCount: 80; color: #C44569,#F8B500,#6C5CE7; size: 0.1,0.4; velocityValue: 0 3 0; velocitySpread: 0.8 0 0.8; accelerationValue: 0 -0.3 0; maxAge: 5"
+                        animation="property: rotation; to: 0 -360 0; loop: true; dur: 25000; easing: linear">
+                    </a-entity>
                 </a-sphere>
             </a-entity>
         </a-scene>

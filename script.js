@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleLyricsButton = document.getElementById('toggle-lyrics');
     const websiteButton = document.getElementById('website-button');
 
+    // パーティクルシステム要素の取得
+    const particleSystem1 = document.getElementById('particle-system1');
+    const particleSystem2 = document.getElementById('particle-system2');
+    const particleSystem3 = document.getElementById('particle-system3');
+
     //音楽再生バー
     const seekBar = document.getElementById('seek-bar');
     const currentTimeDisplay = document.getElementById('current-time');
@@ -260,9 +265,82 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.className = audio.paused ? 'fas fa-play' : 'fas fa-pause';
     }
 
+    // パーティクルシステム制御コンポーネント
+    AFRAME.registerComponent('particle-controller', {
+        init: function () {
+            this.particleSystems = [
+                document.getElementById('particle-system1'),
+                document.getElementById('particle-system2'),
+                document.getElementById('particle-system3')
+            ];
+            this.baseParticleCounts = [100, 50, 80]; // 各システムの基本パーティクル数
+            this.bassRange = [0, 5]; // 低音域
+            this.midRange = [6, 15]; // 中音域
+            this.highRange = [16, 31]; // 高音域
+        },
+        
+        tick: function () {
+            if (analyser && !audio.paused) {
+                const freqByteData = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(freqByteData);
+                
+                // 音域別の強度を計算
+                const bassIntensity = this.getFrequencyRangeIntensity(freqByteData, this.bassRange);
+                const midIntensity = this.getFrequencyRangeIntensity(freqByteData, this.midRange);
+                const highIntensity = this.getFrequencyRangeIntensity(freqByteData, this.highRange);
+                
+                // パーティクルシステムを音楽に同期
+                this.updateParticleSystem(this.particleSystems[0], bassIntensity, 0);
+                this.updateParticleSystem(this.particleSystems[1], midIntensity, 1);
+                this.updateParticleSystem(this.particleSystems[2], highIntensity, 2);
+            }
+        },
+        
+        getFrequencyRangeIntensity: function (freqData, range) {
+            let sum = 0;
+            for (let i = range[0]; i <= range[1]; i++) {
+                sum += freqData[i];
+            }
+            return sum / ((range[1] - range[0] + 1) * 255); // 正規化
+        },
+        
+        updateParticleSystem: function (system, intensity, index) {
+            if (!system) return;
+            
+            // パーティクル数を音楽強度に応じて調整
+            const newParticleCount = Math.floor(this.baseParticleCounts[index] * (1 + intensity * 2));
+            
+            // サイズを音楽強度に応じて調整
+            const sizeMultiplier = 1 + intensity * 0.8;
+            const baseSize = index === 0 ? 0.5 : (index === 1 ? 0.35 : 0.25);
+            const newSize = `${baseSize * sizeMultiplier},${baseSize * sizeMultiplier * 1.6}`;
+            
+            // 速度を音楽強度に応じて調整
+            const velocityMultiplier = 1 + intensity * 1.5;
+            
+            // パーティクルシステムの属性を更新
+            system.setAttribute('particle-system', {
+                particleCount: newParticleCount,
+                size: newSize,
+                opacity: 0.6 + intensity * 0.4
+            });
+            
+            // 色の強度も調整
+            const colorIntensity = Math.floor(intensity * 255);
+            const colors = [
+                `rgb(255,${215 + colorIntensity * 0.16},0)`,
+                `rgb(255,${107 + colorIntensity * 0.58},${107 + colorIntensity * 0.58})`,
+                `rgb(${78 + colorIntensity * 0.69},${236 + colorIntensity * 0.07},${196 + colorIntensity * 0.23})`
+            ];
+        }
+    });
+
     // DOMContentLoaded以降に実行されるように、initAudioAnalyserの呼び出しをここに移動
     init();
     async function init() {
          await initAudioAnalyser();
+         
+         // パーティクル制御コンポーネントをシーンに追加
+         scene.setAttribute('particle-controller', '');
     }
 });
