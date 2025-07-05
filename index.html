@@ -63,6 +63,67 @@
                         particle-system="preset: snow; particleCount: 60; color: #C44569,#F8B500,#6C5CE7; size: 0.02,0.06; velocityValue: 0 1.5 0; velocitySpread: 0.4 0 0.4; accelerationValue: 0 -0.2 0; maxAge: 4; opacity: 0.6"
                         animation="property: rotation; to: 0 -360 0; loop: true; dur: 25000; easing: linear">
                     </a-entity>
+                    
+                    <!-- エネルギー波動エフェクト -->
+                    <a-entity id="energy-waves-container" position="0 0 0">
+                        <!-- 中心から放射される複数の波動リング -->
+                        <a-ring id="energy-wave1" 
+                            position="0 0 0" 
+                            radius-inner="0.1" 
+                            radius-outer="0.2" 
+                            color="#00FFFF" 
+                            opacity="0.7"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                        
+                        <a-ring id="energy-wave2" 
+                            position="0 0 0" 
+                            radius-inner="0.3" 
+                            radius-outer="0.4" 
+                            color="#FF00FF" 
+                            opacity="0.6"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                        
+                        <a-ring id="energy-wave3" 
+                            position="0 0 0" 
+                            radius-inner="0.5" 
+                            radius-outer="0.6" 
+                            color="#FFFF00" 
+                            opacity="0.5"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                        
+                        <a-ring id="energy-wave4" 
+                            position="0 0 0" 
+                            radius-inner="0.7" 
+                            radius-outer="0.8" 
+                            color="#FF6600" 
+                            opacity="0.4"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                        
+                        <!-- 垂直の波動エフェクト -->
+                        <a-ring id="energy-wave-vertical1" 
+                            position="0 0 0" 
+                            rotation="90 0 0"
+                            radius-inner="0.2" 
+                            radius-outer="0.3" 
+                            color="#00FF00" 
+                            opacity="0.6"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                        
+                        <a-ring id="energy-wave-vertical2" 
+                            position="0 0 0" 
+                            rotation="90 0 0"
+                            radius-inner="0.4" 
+                            radius-outer="0.5" 
+                            color="#0080FF" 
+                            opacity="0.5"
+                            material="transparent: true; side: double">
+                        </a-ring>
+                    </a-entity>
                 </a-sphere>
             </a-entity>
         </a-scene>

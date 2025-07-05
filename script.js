@@ -16,6 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const particleSystem1 = document.getElementById('particle-system1');
     const particleSystem2 = document.getElementById('particle-system2');
     const particleSystem3 = document.getElementById('particle-system3');
+    
+    // エネルギー波動エフェクト要素の取得
+    const energyWavesContainer = document.getElementById('energy-waves-container');
+    const energyWaves = [
+        document.getElementById('energy-wave1'),
+        document.getElementById('energy-wave2'),
+        document.getElementById('energy-wave3'),
+        document.getElementById('energy-wave4')
+    ];
+    const verticalWaves = [
+        document.getElementById('energy-wave-vertical1'),
+        document.getElementById('energy-wave-vertical2')
+    ];
 
     //音楽再生バー
     const seekBar = document.getElementById('seek-bar');
@@ -278,6 +291,101 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.className = audio.paused ? 'fas fa-play' : 'fas fa-pause';
     }
 
+    // エネルギー波動エフェクト制御コンポーネント
+    AFRAME.registerComponent('energy-wave-controller', {
+        init: function () {
+            this.energyWaves = [
+                document.getElementById('energy-wave1'),
+                document.getElementById('energy-wave2'),
+                document.getElementById('energy-wave3'),
+                document.getElementById('energy-wave4')
+            ];
+            this.verticalWaves = [
+                document.getElementById('energy-wave-vertical1'),
+                document.getElementById('energy-wave-vertical2')
+            ];
+            this.baseRadii = [
+                {inner: 0.1, outer: 0.2},
+                {inner: 0.3, outer: 0.4},
+                {inner: 0.5, outer: 0.6},
+                {inner: 0.7, outer: 0.8}
+            ];
+            this.verticalBaseRadii = [
+                {inner: 0.2, outer: 0.3},
+                {inner: 0.4, outer: 0.5}
+            ];
+        },
+        
+        tick: function () {
+            if (analyser && !audio.paused) {
+                const freqByteData = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(freqByteData);
+                
+                // 全体の音楽強度を計算
+                let totalIntensity = 0;
+                for (let i = 0; i < freqByteData.length; i++) {
+                    totalIntensity += freqByteData[i];
+                }
+                totalIntensity = totalIntensity / (freqByteData.length * 255);
+                
+                // 低音域の強度（ビート検出）
+                let bassIntensity = 0;
+                for (let i = 0; i < 8; i++) {
+                    bassIntensity += freqByteData[i];
+                }
+                bassIntensity = bassIntensity / (8 * 255);
+                
+                // 水平波動リングの更新
+                this.energyWaves.forEach((wave, index) => {
+                    if (wave) {
+                        const intensity = totalIntensity + (bassIntensity * 0.5);
+                        const scaleMultiplier = 1 + intensity * 2;
+                        const baseRadius = this.baseRadii[index];
+                        
+                        // サイズと透明度を音楽に合わせて変更
+                        const newInnerRadius = baseRadius.inner * scaleMultiplier;
+                        const newOuterRadius = baseRadius.outer * scaleMultiplier;
+                        const newOpacity = Math.min(0.9, 0.3 + intensity * 0.6);
+                        
+                        wave.setAttribute('radius-inner', newInnerRadius);
+                        wave.setAttribute('radius-outer', newOuterRadius);
+                        wave.setAttribute('opacity', newOpacity);
+                        
+                        // 色の強度も変更
+                        const colorIntensity = Math.floor(intensity * 255);
+                        const colors = ['#00FFFF', '#FF00FF', '#FFFF00', '#FF6600'];
+                        wave.setAttribute('color', colors[index]);
+                    }
+                });
+                
+                // 垂直波動リングの更新
+                this.verticalWaves.forEach((wave, index) => {
+                    if (wave) {
+                        const intensity = totalIntensity + (bassIntensity * 0.3);
+                        const scaleMultiplier = 1 + intensity * 1.5;
+                        const baseRadius = this.verticalBaseRadii[index];
+                        
+                        const newInnerRadius = baseRadius.inner * scaleMultiplier;
+                        const newOuterRadius = baseRadius.outer * scaleMultiplier;
+                        const newOpacity = Math.min(0.8, 0.2 + intensity * 0.6);
+                        
+                        wave.setAttribute('radius-inner', newInnerRadius);
+                        wave.setAttribute('radius-outer', newOuterRadius);
+                        wave.setAttribute('opacity', newOpacity);
+                    }
+                });
+                
+                // コンテナ全体の回転（低音に反応）
+                if (energyWavesContainer) {
+                    const rotationSpeed = bassIntensity * 2;
+                    const currentRotation = energyWavesContainer.getAttribute('rotation');
+                    const newRotationY = (currentRotation ? currentRotation.y : 0) + rotationSpeed;
+                    energyWavesContainer.setAttribute('rotation', `0 ${newRotationY} 0`);
+                }
+            }
+        }
+    });
+
     // パーティクルシステム制御コンポーネント
     AFRAME.registerComponent('particle-controller', {
         init: function () {
@@ -352,9 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
     async function init() {
          // AudioContextはユーザー操作後に初期化するため、ここでは呼ばない
-         console.log('AR Music Visualizer initialized');
+         console.log('AR Music Visualizer with Energy Waves initialized');
          
          // パーティクル制御コンポーネントをシーンに追加
          scene.setAttribute('particle-controller', '');
+         
+         // エネルギー波動制御コンポーネントをシーンに追加
+         scene.setAttribute('energy-wave-controller', '');
     }
 });
