@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initAudioAnalyser() {
         try {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // AudioContextが suspended状態の場合、ユーザー操作後に resume
+            if (audioContext.state === 'suspended') {
+                console.log('AudioContext is suspended, will resume on user interaction');
+                return false;
+            }
             await audioContext.resume();
 
             analyser = audioContext.createAnalyser();
@@ -248,9 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
    audioControl.addEventListener('click', async () => {
         try {
+            // AudioContextが未初期化またはsuspended状態の場合、初期化
+            if (!audioContext || audioContext.state === 'suspended') {
+                await initAudioAnalyser();
+            }
+            
             if (audio.paused) {
                 await audio.play();
-                await audioContext.resume();
+                if (audioContext) {
+                    await audioContext.resume();
+                }
             } else {
                 audio.pause();
             }
@@ -338,7 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOMContentLoaded以降に実行されるように、initAudioAnalyserの呼び出しをここに移動
     init();
     async function init() {
-         await initAudioAnalyser();
+         // AudioContextはユーザー操作後に初期化するため、ここでは呼ばない
+         console.log('AR Music Visualizer initialized');
          
          // パーティクル制御コンポーネントをシーンに追加
          scene.setAttribute('particle-controller', '');
