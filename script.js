@@ -12,10 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleLyricsButton = document.getElementById('toggle-lyrics');
     const websiteButton = document.getElementById('website-button');
 
-    // パーティクルシステム要素の取得
-    const particleSystem1 = document.getElementById('particle-system1');
-    const particleSystem2 = document.getElementById('particle-system2');
-    const particleSystem3 = document.getElementById('particle-system3');
+    // シンプルパーティクル要素の取得
+    const simpleParticlesContainer = document.getElementById('simple-particles-container');
+    const particleOrbs = [
+        document.getElementById('particle-orb1'),
+        document.getElementById('particle-orb2'),
+        document.getElementById('particle-orb3'),
+        document.getElementById('particle-orb4'),
+        document.getElementById('particle-orb5')
+    ];
     
     // 惑星軌道システム要素の取得
     const orbitalSystem = document.getElementById('orbital-system');
@@ -179,6 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         updateEqualizerBars: function (freqByteData) {
             try {
+                // スマホでのパフォーマンス最適化
+                if (!mindarTarget || !mindarTarget.object3D || !sphere) {
+                    return;
+                }
+                
                 const targetPosition = mindarTarget.object3D.position;
                 const radius = parseFloat(sphere.getAttribute('radius')) * this.equalizerRadius;
                 const sphereBottomY = targetPosition.y - parseFloat(sphere.getAttribute('radius'));
@@ -186,12 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let i = 0; i < numBars; i++) {
                     const bar = bars[i];
 
-                    if (!bar) {
-                        console.error('bar is null or undefined:', i, bars);
+                    if (!bar || !bar.object3D) {
                         continue;
                     }
                     // 使用する周波数データを選択（高周波数帯域をカット）
-                    const freqIndex = Math.floor((i / numBars) * (FFT_SIZE / 2));
+                    const freqIndex = Math.floor((i / numBars) * Math.min(FFT_SIZE / 2, freqByteData.length));
                     const freqSum = freqByteData[freqIndex] || 0;
                     let barHeight = (freqSum / 255) * 1.5;
                     barHeight = Math.max(0.1, barHeight); // 最小値を設定
@@ -436,18 +445,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // パーティクルシステム制御コンポーネント
-    AFRAME.registerComponent('particle-controller', {
+    // シンプルパーティクル制御コンポーネント
+    AFRAME.registerComponent('simple-particle-controller', {
         init: function () {
-            this.particleSystems = [
-                document.getElementById('particle-system1'),
-                document.getElementById('particle-system2'),
-                document.getElementById('particle-system3')
+            this.particleOrbs = [
+                document.getElementById('particle-orb1'),
+                document.getElementById('particle-orb2'),
+                document.getElementById('particle-orb3'),
+                document.getElementById('particle-orb4'),
+                document.getElementById('particle-orb5')
             ];
-            this.baseParticleCounts = [100, 50, 80]; // 各システムの基本パーティクル数
-            this.bassRange = [0, 5]; // 低音域
-            this.midRange = [6, 15]; // 中音域
-            this.highRange = [16, 31]; // 高音域
+            this.baseRadii = [0.02, 0.025, 0.03, 0.02, 0.025];
+            this.baseColors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#9B59B6', '#E74C3C'];
         },
         
         tick: function () {
@@ -455,54 +464,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 const freqByteData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(freqByteData);
                 
-                // 音域別の強度を計算
-                const bassIntensity = this.getFrequencyRangeIntensity(freqByteData, this.bassRange);
-                const midIntensity = this.getFrequencyRangeIntensity(freqByteData, this.midRange);
-                const highIntensity = this.getFrequencyRangeIntensity(freqByteData, this.highRange);
+                // 全体の音楽強度を計算
+                let totalIntensity = 0;
+                for (let i = 0; i < Math.min(32, freqByteData.length); i++) {
+                    totalIntensity += freqByteData[i];
+                }
+                totalIntensity = totalIntensity / (32 * 255);
                 
-                // パーティクルシステムを音楽に同期
-                this.updateParticleSystem(this.particleSystems[0], bassIntensity, 0);
-                this.updateParticleSystem(this.particleSystems[1], midIntensity, 1);
-                this.updateParticleSystem(this.particleSystems[2], highIntensity, 2);
+                // 各パーティクルオーブを更新
+                this.particleOrbs.forEach((orb, index) => {
+                    if (orb) {
+                        // サイズを音楽に合わせて変更
+                        const newRadius = this.baseRadii[index] * (1 + totalIntensity * 1.5);
+                        orb.setAttribute('radius', newRadius);
+                        
+                        // 発光強度を音楽に合わせて変更
+                        const emissiveIntensity = 0.5 + totalIntensity * 0.8;
+                        orb.setAttribute('material', {
+                            emissive: this.baseColors[index],
+                            emissiveIntensity: emissiveIntensity
+                        });
+                        
+                        // 透明度も音楽に合わせて変更
+                        const opacity = 0.8 + totalIntensity * 0.2;
+                        orb.setAttribute('opacity', opacity);
+                    }
+                });
             }
-        },
-        
-        getFrequencyRangeIntensity: function (freqData, range) {
-            let sum = 0;
-            for (let i = range[0]; i <= range[1]; i++) {
-                sum += freqData[i];
-            }
-            return sum / ((range[1] - range[0] + 1) * 255); // 正規化
-        },
-        
-        updateParticleSystem: function (system, intensity, index) {
-            if (!system) return;
-            
-            // パーティクル数を音楽強度に応じて調整
-            const newParticleCount = Math.floor(this.baseParticleCounts[index] * (1 + intensity * 2));
-            
-            // サイズを音楽強度に応じて調整
-            const sizeMultiplier = 1 + intensity * 0.8;
-            const baseSize = index === 0 ? 0.5 : (index === 1 ? 0.35 : 0.25);
-            const newSize = `${baseSize * sizeMultiplier},${baseSize * sizeMultiplier * 1.6}`;
-            
-            // 速度を音楽強度に応じて調整
-            const velocityMultiplier = 1 + intensity * 1.5;
-            
-            // パーティクルシステムの属性を更新
-            system.setAttribute('particle-system', {
-                particleCount: newParticleCount,
-                size: newSize,
-                opacity: 0.6 + intensity * 0.4
-            });
-            
-            // 色の強度も調整
-            const colorIntensity = Math.floor(intensity * 255);
-            const colors = [
-                `rgb(255,${215 + colorIntensity * 0.16},0)`,
-                `rgb(255,${107 + colorIntensity * 0.58},${107 + colorIntensity * 0.58})`,
-                `rgb(${78 + colorIntensity * 0.69},${236 + colorIntensity * 0.07},${196 + colorIntensity * 0.23})`
-            ];
         }
     });
 
@@ -512,8 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
          // AudioContextはユーザー操作後に初期化するため、ここでは呼ばない
          console.log('AR Music Visualizer with Orbital Planetary System initialized');
          
-         // パーティクル制御コンポーネントをシーンに追加
-         scene.setAttribute('particle-controller', '');
+         // シンプルパーティクル制御コンポーネントをシーンに追加
+         scene.setAttribute('simple-particle-controller', '');
          
          // 惑星軌道システム制御コンポーネントをシーンに追加
          scene.setAttribute('orbital-system-controller', '');
