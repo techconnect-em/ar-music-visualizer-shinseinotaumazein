@@ -17,18 +17,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const particleSystem2 = document.getElementById('particle-system2');
     const particleSystem3 = document.getElementById('particle-system3');
     
-    // エネルギー波動エフェクト要素の取得
-    const energyWavesContainer = document.getElementById('energy-waves-container');
-    const energyWaves = [
-        document.getElementById('energy-wave1'),
-        document.getElementById('energy-wave2'),
-        document.getElementById('energy-wave3'),
-        document.getElementById('energy-wave4')
+    // 惑星軌道システム要素の取得
+    const orbitalSystem = document.getElementById('orbital-system');
+    const orbitContainers = [
+        document.getElementById('orbit1-container'),
+        document.getElementById('orbit2-container'),
+        document.getElementById('orbit3-container'),
+        document.getElementById('orbit4-container'),
+        document.getElementById('orbit5-container')
     ];
-    const verticalWaves = [
-        document.getElementById('energy-wave-vertical1'),
-        document.getElementById('energy-wave-vertical2')
+    const planetOrbits = [
+        document.getElementById('planet1-orbit'),
+        document.getElementById('planet2-orbit'),
+        document.getElementById('planet3-orbit'),
+        document.getElementById('planet4-orbit'),
+        document.getElementById('planet5-orbit')
     ];
+    const planets = [
+        document.getElementById('planet1'),
+        document.getElementById('planet2'),
+        document.getElementById('planet3'),
+        document.getElementById('planet4'),
+        document.getElementById('planet5')
+    ];
+    const centralStar = document.getElementById('central-star');
 
     //音楽再生バー
     const seekBar = document.getElementById('seek-bar');
@@ -291,28 +303,43 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.className = audio.paused ? 'fas fa-play' : 'fas fa-pause';
     }
 
-    // エネルギー波動エフェクト制御コンポーネント
-    AFRAME.registerComponent('energy-wave-controller', {
+    // 惑星軌道システム制御コンポーネント
+    AFRAME.registerComponent('orbital-system-controller', {
         init: function () {
-            this.energyWaves = [
-                document.getElementById('energy-wave1'),
-                document.getElementById('energy-wave2'),
-                document.getElementById('energy-wave3'),
-                document.getElementById('energy-wave4')
+            this.orbitContainers = [
+                document.getElementById('orbit1-container'),
+                document.getElementById('orbit2-container'),
+                document.getElementById('orbit3-container'),
+                document.getElementById('orbit4-container'),
+                document.getElementById('orbit5-container')
             ];
-            this.verticalWaves = [
-                document.getElementById('energy-wave-vertical1'),
-                document.getElementById('energy-wave-vertical2')
+            this.planetOrbits = [
+                document.getElementById('planet1-orbit'),
+                document.getElementById('planet2-orbit'),
+                document.getElementById('planet3-orbit'),
+                document.getElementById('planet4-orbit'),
+                document.getElementById('planet5-orbit')
             ];
-            this.baseRadii = [
-                {inner: 0.1, outer: 0.2},
-                {inner: 0.3, outer: 0.4},
-                {inner: 0.5, outer: 0.6},
-                {inner: 0.7, outer: 0.8}
+            this.planets = [
+                document.getElementById('planet1'),
+                document.getElementById('planet2'),
+                document.getElementById('planet3'),
+                document.getElementById('planet4'),
+                document.getElementById('planet5')
             ];
-            this.verticalBaseRadii = [
-                {inner: 0.2, outer: 0.3},
-                {inner: 0.4, outer: 0.5}
+            this.centralStar = document.getElementById('central-star');
+            
+            // 基本軌道速度（ミリ秒）
+            this.baseOrbitSpeeds = [8000, 12000, 18000, 25000, 30000];
+            // 基本惑星サイズ
+            this.basePlanetRadii = [0.03, 0.04, 0.05, 0.06, 0.04];
+            // 基本軌道傾斜
+            this.baseRotations = [
+                {x: 0, y: 0, z: 15},
+                {x: 30, y: 0, z: 45},
+                {x: 60, y: 0, z: -30},
+                {x: -45, y: 0, z: 60},
+                {x: 90, y: 0, z: 0}
             ];
         },
         
@@ -321,66 +348,89 @@ document.addEventListener('DOMContentLoaded', () => {
                 const freqByteData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(freqByteData);
                 
-                // 全体の音楽強度を計算
+                // 音域別の強度を計算
                 let totalIntensity = 0;
+                let bassIntensity = 0;
+                let midIntensity = 0;
+                let highIntensity = 0;
+                
                 for (let i = 0; i < freqByteData.length; i++) {
                     totalIntensity += freqByteData[i];
+                    if (i < 8) bassIntensity += freqByteData[i];
+                    else if (i < 16) midIntensity += freqByteData[i];
+                    else if (i < 32) highIntensity += freqByteData[i];
                 }
+                
                 totalIntensity = totalIntensity / (freqByteData.length * 255);
-                
-                // 低音域の強度（ビート検出）
-                let bassIntensity = 0;
-                for (let i = 0; i < 8; i++) {
-                    bassIntensity += freqByteData[i];
-                }
                 bassIntensity = bassIntensity / (8 * 255);
+                midIntensity = midIntensity / (8 * 255);
+                highIntensity = highIntensity / (16 * 255);
                 
-                // 水平波動リングの更新
-                this.energyWaves.forEach((wave, index) => {
-                    if (wave) {
-                        const intensity = totalIntensity + (bassIntensity * 0.5);
-                        const scaleMultiplier = 1 + intensity * 2;
-                        const baseRadius = this.baseRadii[index];
+                // 中心の星（太陽）の効果
+                if (this.centralStar) {
+                    const starIntensity = totalIntensity;
+                    const newStarRadius = 0.1 + starIntensity * 0.05;
+                    const starEmissive = starIntensity * 0.8 + 0.2;
+                    
+                    this.centralStar.setAttribute('radius', newStarRadius);
+                    this.centralStar.setAttribute('material', {
+                        shader: 'standard',
+                        metalness: 0.2,
+                        roughness: 0.1,
+                        emissive: '#FFF700',
+                        emissiveIntensity: starEmissive
+                    });
+                }
+                
+                // 各惑星軌道の更新
+                this.planets.forEach((planet, index) => {
+                    if (planet && this.planetOrbits[index] && this.orbitContainers[index]) {
+                        // 音域に応じた反応を設定
+                        let intensity;
+                        if (index === 0 || index === 1) intensity = bassIntensity;
+                        else if (index === 2 || index === 3) intensity = midIntensity;
+                        else intensity = highIntensity;
                         
-                        // サイズと透明度を音楽に合わせて変更
-                        const newInnerRadius = baseRadius.inner * scaleMultiplier;
-                        const newOuterRadius = baseRadius.outer * scaleMultiplier;
-                        const newOpacity = Math.min(0.9, 0.3 + intensity * 0.6);
+                        // 惑星のサイズ変化
+                        const newRadius = this.basePlanetRadii[index] * (1 + intensity * 0.8);
+                        planet.setAttribute('radius', newRadius);
                         
-                        wave.setAttribute('radius-inner', newInnerRadius);
-                        wave.setAttribute('radius-outer', newOuterRadius);
-                        wave.setAttribute('opacity', newOpacity);
+                        // 惑星の発光強度
+                        const emissiveIntensity = 0.3 + intensity * 0.5;
+                        const currentMaterial = planet.getAttribute('material');
+                        planet.setAttribute('material', {
+                            ...currentMaterial,
+                            emissiveIntensity: emissiveIntensity
+                        });
                         
-                        // 色の強度も変更
-                        const colorIntensity = Math.floor(intensity * 255);
-                        const colors = ['#00FFFF', '#FF00FF', '#FFFF00', '#FF6600'];
-                        wave.setAttribute('color', colors[index]);
+                        // 軌道速度の変化（音楽に反応して高速化）
+                        const speedMultiplier = 1 + intensity * 1.5;
+                        const newDuration = Math.max(1000, this.baseOrbitSpeeds[index] / speedMultiplier);
+                        
+                        // アニメーションの更新
+                        this.planetOrbits[index].setAttribute('animation', {
+                            property: 'rotation',
+                            to: index % 2 === 0 ? '0 360 0' : '0 -360 0',
+                            loop: true,
+                            dur: newDuration,
+                            easing: 'linear'
+                        });
+                        
+                        // 軌道全体の動的傾斜（低音に反応）
+                        const baseRot = this.baseRotations[index];
+                        const dynamicTilt = bassIntensity * 20;
+                        this.orbitContainers[index].setAttribute('rotation', 
+                            `${baseRot.x + dynamicTilt} ${baseRot.y} ${baseRot.z + dynamicTilt}`
+                        );
                     }
                 });
                 
-                // 垂直波動リングの更新
-                this.verticalWaves.forEach((wave, index) => {
-                    if (wave) {
-                        const intensity = totalIntensity + (bassIntensity * 0.3);
-                        const scaleMultiplier = 1 + intensity * 1.5;
-                        const baseRadius = this.verticalBaseRadii[index];
-                        
-                        const newInnerRadius = baseRadius.inner * scaleMultiplier;
-                        const newOuterRadius = baseRadius.outer * scaleMultiplier;
-                        const newOpacity = Math.min(0.8, 0.2 + intensity * 0.6);
-                        
-                        wave.setAttribute('radius-inner', newInnerRadius);
-                        wave.setAttribute('radius-outer', newOuterRadius);
-                        wave.setAttribute('opacity', newOpacity);
-                    }
-                });
-                
-                // コンテナ全体の回転（低音に反応）
-                if (energyWavesContainer) {
-                    const rotationSpeed = bassIntensity * 2;
-                    const currentRotation = energyWavesContainer.getAttribute('rotation');
-                    const newRotationY = (currentRotation ? currentRotation.y : 0) + rotationSpeed;
-                    energyWavesContainer.setAttribute('rotation', `0 ${newRotationY} 0`);
+                // 軌道システム全体の回転（音楽全体に反応）
+                if (orbitalSystem) {
+                    const systemRotationSpeed = totalIntensity * 0.5;
+                    const currentRotation = orbitalSystem.getAttribute('rotation') || {x: 0, y: 0, z: 0};
+                    const newRotationY = (currentRotation.y || 0) + systemRotationSpeed;
+                    orbitalSystem.setAttribute('rotation', `0 ${newRotationY} 0`);
                 }
             }
         }
@@ -460,12 +510,12 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
     async function init() {
          // AudioContextはユーザー操作後に初期化するため、ここでは呼ばない
-         console.log('AR Music Visualizer with Energy Waves initialized');
+         console.log('AR Music Visualizer with Orbital Planetary System initialized');
          
          // パーティクル制御コンポーネントをシーンに追加
          scene.setAttribute('particle-controller', '');
          
-         // エネルギー波動制御コンポーネントをシーンに追加
-         scene.setAttribute('energy-wave-controller', '');
+         // 惑星軌道システム制御コンポーネントをシーンに追加
+         scene.setAttribute('orbital-system-controller', '');
     }
 });

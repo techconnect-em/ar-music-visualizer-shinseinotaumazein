@@ -64,65 +64,123 @@
                         animation="property: rotation; to: 0 -360 0; loop: true; dur: 25000; easing: linear">
                     </a-entity>
                     
-                    <!-- エネルギー波動エフェクト -->
-                    <a-entity id="energy-waves-container" position="0 0 0">
-                        <!-- 中心から放射される複数の波動リング -->
-                        <a-ring id="energy-wave1" 
-                            position="0 0 0" 
-                            radius-inner="0.1" 
-                            radius-outer="0.2" 
-                            color="#00FFFF" 
-                            opacity="0.7"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                    <!-- 惑星軌道システム -->
+                    <a-entity id="orbital-system" position="0 0 0">
+                        <!-- 軌道1: 最内周の高速軌道 -->
+                        <a-entity id="orbit1-container" rotation="0 0 15">
+                            <a-ring id="orbit1-ring" 
+                                position="0 0 0" 
+                                radius-inner="0.6" 
+                                radius-outer="0.62" 
+                                color="#FF6B9D" 
+                                opacity="0.4"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <!-- 軌道上の惑星 -->
+                            <a-entity id="planet1-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
+                                <a-sphere id="planet1" 
+                                    position="0.61 0 0" 
+                                    radius="0.03" 
+                                    color="#FF1493" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 1; roughness: 0.1; emissive: #FF1493; emissiveIntensity: 0.3">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
                         
-                        <a-ring id="energy-wave2" 
-                            position="0 0 0" 
-                            radius-inner="0.3" 
-                            radius-outer="0.4" 
-                            color="#FF00FF" 
-                            opacity="0.6"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                        <!-- 軌道2: 傾斜した中間軌道 -->
+                        <a-entity id="orbit2-container" rotation="30 0 45">
+                            <a-ring id="orbit2-ring" 
+                                position="0 0 0" 
+                                radius-inner="0.9" 
+                                radius-outer="0.92" 
+                                color="#4ECDC4" 
+                                opacity="0.4"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <a-entity id="planet2-orbit" animation="property: rotation; to: 0 -360 0; loop: true; dur: 12000; easing: linear">
+                                <a-sphere id="planet2" 
+                                    position="0.91 0 0" 
+                                    radius="0.04" 
+                                    color="#00CED1" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 1; roughness: 0.1; emissive: #00CED1; emissiveIntensity: 0.3">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
                         
-                        <a-ring id="energy-wave3" 
-                            position="0 0 0" 
-                            radius-inner="0.5" 
-                            radius-outer="0.6" 
-                            color="#FFFF00" 
-                            opacity="0.5"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                        <!-- 軌道3: 楕円形の外周軌道 -->
+                        <a-entity id="orbit3-container" rotation="60 0 -30">
+                            <a-ring id="orbit3-ring" 
+                                position="0 0 0" 
+                                radius-inner="1.2" 
+                                radius-outer="1.22" 
+                                color="#FFD700" 
+                                opacity="0.3"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <a-entity id="planet3-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear">
+                                <a-sphere id="planet3" 
+                                    position="1.21 0 0" 
+                                    radius="0.05" 
+                                    color="#FFD700" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 1; roughness: 0.1; emissive: #FFD700; emissiveIntensity: 0.4">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
                         
-                        <a-ring id="energy-wave4" 
-                            position="0 0 0" 
-                            radius-inner="0.7" 
-                            radius-outer="0.8" 
-                            color="#FF6600" 
-                            opacity="0.4"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                        <!-- 軌道4: 大きな外周軌道 -->
+                        <a-entity id="orbit4-container" rotation="-45 0 60">
+                            <a-ring id="orbit4-ring" 
+                                position="0 0 0" 
+                                radius-inner="1.5" 
+                                radius-outer="1.52" 
+                                color="#9B59B6" 
+                                opacity="0.3"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <a-entity id="planet4-orbit" animation="property: rotation; to: 0 -360 0; loop: true; dur: 25000; easing: linear">
+                                <a-sphere id="planet4" 
+                                    position="1.51 0 0" 
+                                    radius="0.06" 
+                                    color="#8A2BE2" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 1; roughness: 0.1; emissive: #8A2BE2; emissiveIntensity: 0.4">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
                         
-                        <!-- 垂直の波動エフェクト -->
-                        <a-ring id="energy-wave-vertical1" 
-                            position="0 0 0" 
-                            rotation="90 0 0"
-                            radius-inner="0.2" 
-                            radius-outer="0.3" 
-                            color="#00FF00" 
-                            opacity="0.6"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                        <!-- 軌道5: 最外周の垂直軌道 -->
+                        <a-entity id="orbit5-container" rotation="90 0 0">
+                            <a-ring id="orbit5-ring" 
+                                position="0 0 0" 
+                                radius-inner="1.8" 
+                                radius-outer="1.82" 
+                                color="#E74C3C" 
+                                opacity="0.25"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <a-entity id="planet5-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 30000; easing: linear">
+                                <a-sphere id="planet5" 
+                                    position="1.81 0 0" 
+                                    radius="0.04" 
+                                    color="#DC143C" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 1; roughness: 0.1; emissive: #DC143C; emissiveIntensity: 0.3">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
                         
-                        <a-ring id="energy-wave-vertical2" 
+                        <!-- 中心の星（太陽のような効果） -->
+                        <a-sphere id="central-star" 
                             position="0 0 0" 
-                            rotation="90 0 0"
-                            radius-inner="0.4" 
-                            radius-outer="0.5" 
-                            color="#0080FF" 
-                            opacity="0.5"
-                            material="transparent: true; side: double">
-                        </a-ring>
+                            radius="0.1" 
+                            color="#FFF700" 
+                            opacity="0.8"
+                            material="shader: standard; metalness: 0.2; roughness: 0.1; emissive: #FFF700; emissiveIntensity: 0.6"
+                            animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
+                        </a-sphere>
                     </a-entity>
                 </a-sphere>
             </a-entity>
