@@ -287,13 +287,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
                             bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         } else if (isIOS) {
-                            // iPhone用：横一列配置のため位置計算が異なる
-                            const x = i * 0.15 - 0.6;
+                            // iPhone用：スフィア周囲の円形配置
+                            let angle = 0;
+                            if (currentNumBars > 1) {
+                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
+                            }
+                            const x = Math.cos(angle - Math.PI / 2) * radius;
+                            const z = Math.sin(angle - Math.PI / 2) * radius;
                             const y = sphereBottomY + this.barHeights[i] / 2;
-                            const z = 0;
                             
                             bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
                             bar.setAttribute('geometry', `primitive: box; width: 0.08; height: ${this.barHeights[i]}; depth: 0.08`);
+                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         } else if (isMobile) {
                             // その他モバイル：円形配置
                             let angle = 0;
@@ -663,8 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.spaceMask = document.getElementById('space-mask');
             this.time = 0;
             
-            // Three.jsパーティクル初期化を一時的にコメントアウト
-            /*
+            // Three.jsパーティクル初期化
             const initParticles = () => {
                 if (document.querySelector('a-scene').hasLoaded) {
                     initThreeJsParticles();
@@ -676,17 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
             initParticles();
-            */
-            
-            // 星空マスクのみアクティブ化
-            if (this.spaceMask) {
-                this.spaceMask.classList.add('active');
-            }
         },
         
         tick: function () {
-            // Three.jsパーティクル処理を一時的にコメントアウト
-            /*
             this.time += 0.016; // 60fps想定
             
             if (analyser && !audio.paused && threeJsParticleSystem) {
@@ -710,10 +706,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.spaceMask.style.opacity = opacity;
                 }
             }
-            */
-            
-            // 現在はイコライザーバーの表示に集中
-            console.log('Enhanced particle controller active - focusing on equalizer bars');
         }
     });
 
