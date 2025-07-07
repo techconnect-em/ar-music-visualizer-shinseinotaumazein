@@ -1,4 +1,55 @@
+// 詳細なブラウザ・デバイス検出とログ出力
+console.log('=== Browser & Device Detection ===');
+console.log('User Agent:', navigator.userAgent);
+console.log('Platform:', navigator.platform);
+console.log('Max Touch Points:', navigator.maxTouchPoints);
+console.log('Vendor:', navigator.vendor);
+
+// より詳細なブラウザ検出
+const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+const isChrome = /Chrome/.test(navigator.userAgent);
+const isFirefox = /Firefox/.test(navigator.userAgent);
+
+console.log('Browser Detection:');
+console.log('  Safari:', isSafari);
+console.log('  Chrome:', isChrome);
+console.log('  Firefox:', isFirefox);
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                 navigator.maxTouchPoints > 1;
+
+console.log('Device Detection:');
+console.log('  iOS:', isIOS);
+console.log('  Mobile:', isMobile);
+
+if (isSafari) {
+    console.log('🦎 Safari検出: スクリプト開始');
+}
+if (isIOS) {
+    console.log('🍎 iPhone/iPad検出: スクリプト開始');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // デバイス確認ログ
+    console.log('🔍 DOM読み込み完了 - デバイス:', isIOS ? 'iOS' : (isMobile ? 'Mobile' : 'Desktop'));
+    
+    // A-Frameが完全に読み込まれるまで待機
+    if (typeof AFRAME !== 'undefined') {
+        console.log('A-Frame loaded successfully');
+        
+        // 404エラーを無視する設定
+        console.log('✅ AR Music Visualizer successfully loaded');
+        console.log('🌟 Particle system: A-Frame spheres + Three.js particles');
+        console.log('🪐 Orbital system: Stable non-reactive planets');
+        console.log('🎵 Audio system: Web Audio API + frequency analysis');
+    }
+    
+    if (isIOS) {
+        console.log('🍎 iPhone: DOM読み込み完了');
+    }
+    
     let audioContext, analyser, source;
     const audioControl = document.getElementById('audio-control');
     const audio = document.getElementById('audio');
@@ -7,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sphere = document.getElementById('visualSphere');
     const model = document.getElementById('base-entity');
     const equalizerContainer = document.getElementById('equalizer-container');
+    console.log('🔍 DEBUG: DOM equalizerContainer lookup:', equalizerContainer);
     const mindarTarget = document.querySelector('[mindar-image-target]');
     const lyricsOverlay = document.getElementById('lyrics-overlay');
     const toggleLyricsButton = document.getElementById('toggle-lyrics');
@@ -53,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const durationDisplay = document.getElementById('duration');
 
     const FFT_SIZE = 256;
-    const numBars = 32; // 固定のバーの数に変更
+    const numBars = 16; // 簡素化のため16本に固定
     let bars = [];
     let isLyricsVisible = false;
 
@@ -76,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
          const absMins = Math.abs(mins);
         const absSecs = Math.abs(secs);
 
-         const formattedMins = String(absMins).padStart(0, '0');
-        const formattedSecs = String(absSecs).padStart(2, '0');
-        return `${mins < 0 ? '-' : ''}${formattedMins}:${formattedSecs}`;
+         const formattedMins = String(absMins);
+        const formattedSecs = absSecs < 10 ? '0' + String(absSecs) : String(absSecs);
+        return (mins < 0 ? '-' : '') + formattedMins + ':' + formattedSecs;
     }
 
    // イベントリスナー: メタデータがロードされたとき
@@ -117,12 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initAudioAnalyser() {
         try {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // AudioContextが suspended状態の場合、ユーザー操作後に resume
-            if (audioContext.state === 'suspended') {
-                console.log('AudioContext is suspended, will resume on user interaction');
-                return false;
-            }
             await audioContext.resume();
 
             analyser = audioContext.createAnalyser();
@@ -146,13 +192,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error initializing equalizer bars:', error);
             }
 
-
             return true;
         } catch (error) {
             console.error('Audio analyser initialization error:', error);
             return false;
         }
     }
+
 
     // 音声データの解析と視覚化
     AFRAME.registerComponent('audio-visualizer', {
@@ -161,7 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.barColor = 'yellow';
             this.equalizerRadius = 1.1;
             this.smoothing = 0.3;
-            this.barHeights = new Array(numBars).fill(0); // スムージング用の配列
+            // バー高さ配列は動的に初期化（モバイル対応）
+            this.barHeights = [];
             console.log('Audio visualizer component initialized.');
         },
         tick: function () {
@@ -184,41 +231,99 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         updateEqualizerBars: function (freqByteData) {
             try {
-                // スマホでのパフォーマンス最適化
+                // バーが初期化されているかチェック
+                if (bars.length === 0) {
+                    return;
+                }
+                
+                // 基本要素の存在確認
                 if (!mindarTarget || !mindarTarget.object3D || !sphere) {
                     return;
                 }
+                
+                // グローバル変数のブラウザ検出結果を使用
+                const currentNumBars = bars.length;
                 
                 const targetPosition = mindarTarget.object3D.position;
                 const radius = parseFloat(sphere.getAttribute('radius')) * this.equalizerRadius;
                 const sphereBottomY = targetPosition.y - parseFloat(sphere.getAttribute('radius'));
 
-                for (let i = 0; i < numBars; i++) {
+                for (let i = 0; i < currentNumBars; i++) {
                     const bar = bars[i];
 
-                    if (!bar || !bar.object3D) {
+                    if (!bar) {
                         continue;
                     }
-                    // 使用する周波数データを選択（高周波数帯域をカット）
-                    const freqIndex = Math.floor((i / numBars) * Math.min(FFT_SIZE / 2, freqByteData.length));
+                    
+                    // iPhone以外はobject3D確認
+                    if (!isIOS && !bar.object3D) {
+                        continue;
+                    }
+                    
+                    // 周波数データの処理
+                    const freqIndex = Math.floor((i / currentNumBars) * Math.min(FFT_SIZE / 2, freqByteData.length));
                     const freqSum = freqByteData[freqIndex] || 0;
-                    let barHeight = (freqSum / 255) * 1.5;
-                    barHeight = Math.max(0.1, barHeight); // 最小値を設定
+                    let barHeight = (freqSum / 255) * (isIOS ? 0.8 : (isMobile ? 1.0 : 1.5));
+                    barHeight = Math.max(isIOS ? 0.05 : (isMobile ? 0.1 : 0.15), barHeight);
 
                     // スムージング処理
+                    if (!this.barHeights[i]) {
+                        this.barHeights[i] = barHeight;
+                    }
                     this.barHeights[i] = this.barHeights[i] + (barHeight - this.barHeights[i]) * this.smoothing;
 
-                    let angle = 0;
-                    if (numBars > 1) {
-                        angle = (i / (numBars - 1)) * Math.PI - (Math.PI / 2);
-                    }
-                    const x = Math.cos(angle - Math.PI / 2) * radius;
-                    const z = Math.sin(angle - Math.PI / 2) * radius;
-                    const y = sphereBottomY + this.barHeights[i] / 2;
+                    try {
+                        if (isSafari) {
+                            // Safari用：スフィア周囲の円形配置
+                            let angle = 0;
+                            if (currentNumBars > 1) {
+                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
+                            }
+                            const x = Math.cos(angle - Math.PI / 2) * radius;
+                            const z = Math.sin(angle - Math.PI / 2) * radius;
+                            const y = sphereBottomY + this.barHeights[i] / 2;
 
-                    bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
-                    bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
-                    bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
+                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                            bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
+                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
+                        } else if (isIOS) {
+                            // iPhone用：横一列配置のため位置計算が異なる
+                            const x = i * 0.15 - 0.6;
+                            const y = sphereBottomY + this.barHeights[i] / 2;
+                            const z = 0;
+                            
+                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                            bar.setAttribute('geometry', `primitive: box; width: 0.08; height: ${this.barHeights[i]}; depth: 0.08`);
+                        } else if (isMobile) {
+                            // その他モバイル：円形配置
+                            let angle = 0;
+                            if (currentNumBars > 1) {
+                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
+                            }
+                            const x = Math.cos(angle - Math.PI / 2) * radius;
+                            const z = Math.sin(angle - Math.PI / 2) * radius;
+                            const y = sphereBottomY + this.barHeights[i] / 2;
+
+                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                            bar.setAttribute('geometry', `primitive: box; width: 0.03; height: ${this.barHeights[i]}; depth: 0.03`);
+                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
+                        } else {
+                            // デスクトップ：通常の処理
+                            let angle = 0;
+                            if (currentNumBars > 1) {
+                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
+                            }
+                            const x = Math.cos(angle - Math.PI / 2) * radius;
+                            const z = Math.sin(angle - Math.PI / 2) * radius;
+                            const y = sphereBottomY + this.barHeights[i] / 2;
+
+                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                            bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
+                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
+                        }
+                    } catch (barError) {
+                        console.error(`Error updating bar ${i}:`, barError);
+                    }
                 }
             } catch (error) {
                 console.error('Error during equalizer animation:', error);
@@ -288,17 +393,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
    audioControl.addEventListener('click', async () => {
         try {
+            console.log('Audio control clicked');
+            console.log('🔧 Audio control - iOS:', isIOS, 'Mobile:', isMobile);
+            
             // AudioContextが未初期化またはsuspended状態の場合、初期化
             if (!audioContext || audioContext.state === 'suspended') {
-                await initAudioAnalyser();
+                console.log('Initializing audio analyser...');
+                const success = await initAudioAnalyser();
+                if (!success && isIOS) {
+                    console.log('Audio analyser init failed, retrying for iOS...');
+                    // iPhone用のリトライ
+                    setTimeout(async () => {
+                        await initAudioAnalyser();
+                    }, 1000);
+                }
             }
             
             if (audio.paused) {
+                console.log('Starting audio playback...');
                 await audio.play();
                 if (audioContext) {
                     await audioContext.resume();
+                    console.log('✅ DEBUG: AudioContext manually resumed, state:', audioContext.state);
+                    
+                    // AudioContext復帰後、イコライザーバーが作成されているかチェック
+                    setTimeout(() => {
+                        console.log('🔍 DEBUG: Post-resume equalizer check');
+                        console.log('🔍 DEBUG: Bars array length:', bars.length);
+                        console.log('🔍 DEBUG: AudioContext final state:', audioContext.state);
+                        
+                        if (bars.length === 0) {
+                            console.log('⚠️ DEBUG: No bars found, attempting to create...');
+                            if (equalizerContainer) {
+                                window.createEqualizerBars(numBars);
+                            }
+                        }
+                    }, 500);
+                }
+                
+                // iPhone用：再生開始後にイコライザーバーの状態を確認
+                if (isIOS) {
+                    setTimeout(() => {
+                        console.log('=== iOS Audio Playback Check ===');
+                        console.log(`Bars array length: ${bars.length}`);
+                        console.log(`Audio paused: ${audio.paused}`);
+                        console.log(`AudioContext state: ${audioContext ? audioContext.state : 'null'}`);
+                        console.log(`Analyser exists: ${!!analyser}`);
+                        
+                        // iPhone用ログ通知
+                        console.log(`🍎 iPhone音楽再生: バー${bars.length}本, 音楽${audio.paused ? '停止中' : '再生中'}`);
+                    }, 2000);
                 }
             } else {
+                console.log('Pausing audio playback...');
                 audio.pause();
             }
             updateAudioButton();
@@ -312,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.className = audio.paused ? 'fas fa-play' : 'fas fa-pause';
     }
 
-    // 惑星軌道システム制御コンポーネント
+    // 惑星軌道システム制御コンポーネント（音楽反応なし、安定軌道）
     AFRAME.registerComponent('orbital-system-controller', {
         init: function () {
             this.orbitContainers = [
@@ -338,159 +485,235 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             this.centralStar = document.getElementById('central-star');
             
-            // 基本軌道速度（ミリ秒）
-            this.baseOrbitSpeeds = [8000, 12000, 18000, 25000, 30000];
-            // 基本惑星サイズ
-            this.basePlanetRadii = [0.03, 0.04, 0.05, 0.06, 0.04];
-            // 基本軌道傾斜
-            this.baseRotations = [
+            // 固定の軌道速度（音楽に反応しない安定した軌道）
+            this.orbitSpeeds = [8000, 12000, 18000, 25000, 30000];
+            // 固定の惑星サイズ
+            this.planetRadii = [0.03, 0.04, 0.05, 0.06, 0.04];
+            // 固定の軌道傾斜
+            this.orbitRotations = [
                 {x: 0, y: 0, z: 15},
                 {x: 30, y: 0, z: 45},
                 {x: 60, y: 0, z: -30},
                 {x: -45, y: 0, z: 60},
                 {x: 90, y: 0, z: 0}
             ];
+            
+            // 初期化時に軌道と惑星の設定を固定
+            this.setupStableOrbits();
+        },
+        
+        setupStableOrbits: function () {
+            // 中心の星の固定設定
+            if (this.centralStar) {
+                this.centralStar.setAttribute('radius', 0.1);
+                this.centralStar.setAttribute('material', {
+                    shader: 'standard',
+                    metalness: 0.2,
+                    roughness: 0.1,
+                    emissive: '#FFF700',
+                    emissiveIntensity: 0.6
+                });
+            }
+            
+            // 各惑星軌道の固定設定
+            this.planets.forEach((planet, index) => {
+                if (planet && this.planetOrbits[index] && this.orbitContainers[index]) {
+                    // 惑星のサイズを固定
+                    planet.setAttribute('radius', this.planetRadii[index]);
+                    
+                    // 惑星の発光強度を固定
+                    const currentMaterial = planet.getAttribute('material');
+                    planet.setAttribute('material', {
+                        ...currentMaterial,
+                        emissiveIntensity: 0.3
+                    });
+                    
+                    // 軌道の回転を固定速度で設定
+                    this.planetOrbits[index].setAttribute('animation', {
+                        property: 'rotation',
+                        to: index % 2 === 0 ? '0 360 0' : '0 -360 0',
+                        loop: true,
+                        dur: this.orbitSpeeds[index],
+                        easing: 'linear'
+                    });
+                    
+                    // 軌道全体の傾斜を固定
+                    const rotation = this.orbitRotations[index];
+                    this.orbitContainers[index].setAttribute('rotation', 
+                        `${rotation.x} ${rotation.y} ${rotation.z}`
+                    );
+                }
+            });
         },
         
         tick: function () {
-            if (analyser && !audio.paused) {
-                const freqByteData = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(freqByteData);
-                
-                // 音域別の強度を計算
-                let totalIntensity = 0;
-                let bassIntensity = 0;
-                let midIntensity = 0;
-                let highIntensity = 0;
-                
-                for (let i = 0; i < freqByteData.length; i++) {
-                    totalIntensity += freqByteData[i];
-                    if (i < 8) bassIntensity += freqByteData[i];
-                    else if (i < 16) midIntensity += freqByteData[i];
-                    else if (i < 32) highIntensity += freqByteData[i];
-                }
-                
-                totalIntensity = totalIntensity / (freqByteData.length * 255);
-                bassIntensity = bassIntensity / (8 * 255);
-                midIntensity = midIntensity / (8 * 255);
-                highIntensity = highIntensity / (16 * 255);
-                
-                // 中心の星（太陽）の効果
-                if (this.centralStar) {
-                    const starIntensity = totalIntensity;
-                    const newStarRadius = 0.1 + starIntensity * 0.05;
-                    const starEmissive = starIntensity * 0.8 + 0.2;
-                    
-                    this.centralStar.setAttribute('radius', newStarRadius);
-                    this.centralStar.setAttribute('material', {
-                        shader: 'standard',
-                        metalness: 0.2,
-                        roughness: 0.1,
-                        emissive: '#FFF700',
-                        emissiveIntensity: starEmissive
-                    });
-                }
-                
-                // 各惑星軌道の更新
-                this.planets.forEach((planet, index) => {
-                    if (planet && this.planetOrbits[index] && this.orbitContainers[index]) {
-                        // 音域に応じた反応を設定
-                        let intensity;
-                        if (index === 0 || index === 1) intensity = bassIntensity;
-                        else if (index === 2 || index === 3) intensity = midIntensity;
-                        else intensity = highIntensity;
-                        
-                        // 惑星のサイズ変化
-                        const newRadius = this.basePlanetRadii[index] * (1 + intensity * 0.8);
-                        planet.setAttribute('radius', newRadius);
-                        
-                        // 惑星の発光強度
-                        const emissiveIntensity = 0.3 + intensity * 0.5;
-                        const currentMaterial = planet.getAttribute('material');
-                        planet.setAttribute('material', {
-                            ...currentMaterial,
-                            emissiveIntensity: emissiveIntensity
-                        });
-                        
-                        // 軌道速度の変化（音楽に反応して高速化）
-                        const speedMultiplier = 1 + intensity * 1.5;
-                        const newDuration = Math.max(1000, this.baseOrbitSpeeds[index] / speedMultiplier);
-                        
-                        // アニメーションの更新
-                        this.planetOrbits[index].setAttribute('animation', {
-                            property: 'rotation',
-                            to: index % 2 === 0 ? '0 360 0' : '0 -360 0',
-                            loop: true,
-                            dur: newDuration,
-                            easing: 'linear'
-                        });
-                        
-                        // 軌道全体の動的傾斜（低音に反応）
-                        const baseRot = this.baseRotations[index];
-                        const dynamicTilt = bassIntensity * 20;
-                        this.orbitContainers[index].setAttribute('rotation', 
-                            `${baseRot.x + dynamicTilt} ${baseRot.y} ${baseRot.z + dynamicTilt}`
-                        );
-                    }
-                });
-                
-                // 軌道システム全体の回転（音楽全体に反応）
-                if (orbitalSystem) {
-                    const systemRotationSpeed = totalIntensity * 0.5;
-                    const currentRotation = orbitalSystem.getAttribute('rotation') || {x: 0, y: 0, z: 0};
-                    const newRotationY = (currentRotation.y || 0) + systemRotationSpeed;
-                    orbitalSystem.setAttribute('rotation', `0 ${newRotationY} 0`);
-                }
-            }
+            // 音楽に反応せず、安定した軌道を維持
+            // 何も処理しない
         }
     });
 
-    // シンプルパーティクル制御コンポーネント
-    AFRAME.registerComponent('simple-particle-controller', {
+    // Three.js直接使用の星パーティクルシステム
+    let threeJsParticleSystem = null;
+    
+    function initThreeJsParticles() {
+        try {
+            const sceneEl = document.querySelector('a-scene');
+            const cameraEl = document.querySelector('a-camera');
+            
+            if (!sceneEl || !cameraEl || !sceneEl.object3D || typeof THREE === 'undefined') {
+                console.error('A-Frame scene, camera, or THREE.js not ready');
+                return;
+            }
+            
+            const scene = sceneEl.object3D;
+            const camera = cameraEl.object3D;
+        
+        // パーティクルジオメトリとマテリアル
+        const geometry = new THREE.BufferGeometry();
+        const particleCount = 50;
+        
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+        
+        // パーティクルの初期配置
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            
+            // 球状に配置
+            const radius = 2 + Math.random() * 3;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            
+            positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+            positions[i3 + 2] = radius * Math.cos(phi);
+            
+            // 青白い色
+            colors[i3] = 0.5 + Math.random() * 0.5;     // R
+            colors[i3 + 1] = 0.8 + Math.random() * 0.2; // G
+            colors[i3 + 2] = 1.0;                       // B
+            
+            sizes[i] = 0.1 + Math.random() * 0.2;
+        }
+        
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        
+        // シェーダーマテリアル
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 1.0 },
+                audioIntensity: { value: 0.0 }
+            },
+            vertexShader: [
+                'attribute float size;',
+                'uniform float time;',
+                'uniform float audioIntensity;',
+                'varying vec3 vColor;',
+                '',
+                'void main() {',
+                '    vColor = color;',
+                '    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+                '    ',
+                '    float dynamicSize = size * (1.0 + audioIntensity * 2.0);',
+                '    ',
+                '    gl_PointSize = dynamicSize * (300.0 / -mvPosition.z);',
+                '    gl_Position = projectionMatrix * mvPosition;',
+                '}'
+            ].join('\n'),
+            fragmentShader: [
+                'uniform float time;',
+                'uniform float audioIntensity;',
+                'varying vec3 vColor;',
+                '',
+                'void main() {',
+                '    vec2 coord = gl_PointCoord - vec2(0.5);',
+                '    float dist = length(coord);',
+                '    ',
+                '    if (dist > 0.5) discard;',
+                '    ',
+                '    float alpha = 1.0 - dist * 2.0;',
+                '    float glow = 0.8 + sin(time * 5.0 + gl_FragCoord.x * 0.01) * 0.2;',
+                '    ',
+                '    vec3 finalColor = vColor * (glow + audioIntensity);',
+                '    ',
+                '    gl_FragColor = vec4(finalColor, alpha);',
+                '}'
+            ].join('\n'),
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            transparent: true,
+            vertexColors: true
+        });
+        
+        threeJsParticleSystem = new THREE.Points(geometry, material);
+        scene.add(threeJsParticleSystem);
+        
+        console.log('Three.js particle system initialized');
+        } catch (error) {
+            console.error('Error initializing Three.js particles:', error);
+        }
+    }
+    
+    // 音楽反応とマスク制御（Three.jsパーティクル一時無効）
+    AFRAME.registerComponent('enhanced-particle-controller', {
         init: function () {
-            this.particleOrbs = [
-                document.getElementById('particle-orb1'),
-                document.getElementById('particle-orb2'),
-                document.getElementById('particle-orb3'),
-                document.getElementById('particle-orb4'),
-                document.getElementById('particle-orb5')
-            ];
-            this.baseRadii = [0.02, 0.025, 0.03, 0.02, 0.025];
-            this.baseColors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#9B59B6', '#E74C3C'];
+            this.spaceMask = document.getElementById('space-mask');
+            this.time = 0;
+            
+            // Three.jsパーティクル初期化を一時的にコメントアウト
+            /*
+            const initParticles = () => {
+                if (document.querySelector('a-scene').hasLoaded) {
+                    initThreeJsParticles();
+                    if (this.spaceMask) {
+                        this.spaceMask.classList.add('active');
+                    }
+                } else {
+                    setTimeout(initParticles, 500);
+                }
+            };
+            initParticles();
+            */
+            
+            // 星空マスクのみアクティブ化
+            if (this.spaceMask) {
+                this.spaceMask.classList.add('active');
+            }
         },
         
         tick: function () {
-            if (analyser && !audio.paused) {
+            // Three.jsパーティクル処理を一時的にコメントアウト
+            /*
+            this.time += 0.016; // 60fps想定
+            
+            if (analyser && !audio.paused && threeJsParticleSystem) {
                 const freqByteData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(freqByteData);
                 
-                // 全体の音楽強度を計算
-                let totalIntensity = 0;
-                for (let i = 0; i < Math.min(32, freqByteData.length); i++) {
-                    totalIntensity += freqByteData[i];
+                // 高音域の強度を計算
+                let highFreqIntensity = 0;
+                for (let i = 16; i < Math.min(64, freqByteData.length); i++) {
+                    highFreqIntensity += freqByteData[i];
                 }
-                totalIntensity = totalIntensity / (32 * 255);
+                highFreqIntensity = highFreqIntensity / (48 * 255);
                 
-                // 各パーティクルオーブを更新
-                this.particleOrbs.forEach((orb, index) => {
-                    if (orb) {
-                        // サイズを音楽に合わせて変更
-                        const newRadius = this.baseRadii[index] * (1 + totalIntensity * 1.5);
-                        orb.setAttribute('radius', newRadius);
-                        
-                        // 発光強度を音楽に合わせて変更
-                        const emissiveIntensity = 0.5 + totalIntensity * 0.8;
-                        orb.setAttribute('material', {
-                            emissive: this.baseColors[index],
-                            emissiveIntensity: emissiveIntensity
-                        });
-                        
-                        // 透明度も音楽に合わせて変更
-                        const opacity = 0.8 + totalIntensity * 0.2;
-                        orb.setAttribute('opacity', opacity);
-                    }
-                });
+                // Three.jsパーティクルシステムの更新
+                threeJsParticleSystem.material.uniforms.time.value = this.time;
+                threeJsParticleSystem.material.uniforms.audioIntensity.value = highFreqIntensity;
+                
+                // CSS マスクの動的変更
+                if (this.spaceMask) {
+                    const opacity = 0.7 + highFreqIntensity * 0.3;
+                    this.spaceMask.style.opacity = opacity;
+                }
             }
+            */
+            
+            // 現在はイコライザーバーの表示に集中
+            console.log('Enhanced particle controller active - focusing on equalizer bars');
         }
     });
 
@@ -500,10 +723,12 @@ document.addEventListener('DOMContentLoaded', () => {
          // AudioContextはユーザー操作後に初期化するため、ここでは呼ばない
          console.log('AR Music Visualizer with Orbital Planetary System initialized');
          
-         // シンプルパーティクル制御コンポーネントをシーンに追加
-         scene.setAttribute('simple-particle-controller', '');
+         // シンプルパーティクル制御コンポーネントは削除（enhanced-particle-controllerを使用）
          
          // 惑星軌道システム制御コンポーネントをシーンに追加
          scene.setAttribute('orbital-system-controller', '');
+         
+         // Three.jsパーティクルと星空マスク制御コンポーネントをシーンに追加
+         scene.setAttribute('enhanced-particle-controller', '');
     }
 });

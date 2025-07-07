@@ -2,13 +2,14 @@
 <html>
 
 <head>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <!-- パーティクルシステム用ライブラリ -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe-particle-system-component@1.0.14/dist/aframe-particle-system-component.min.js"></script>
-    <!-- MindAR - より安定したバージョンを使用 -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <!-- Three.js直接使用のパーティクルシステム用 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r140/three.min.js"></script>
+    <!-- MindAR - 最新安定版を使用 -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
@@ -24,7 +25,7 @@
 
         <a-scene
             mindar-image="imageTargetSrc: ./assets/targets.mind; maxTrack: 1; warmupTolerance: 5; missTolerance: 15; filterMinCF: 0.001; filterBeta: 1000"
-            embedded color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; precision: highp; logarithmicDepthBuffer: true;"
+            embedded color-space="sRGB" renderer="colorManagement: true; antialias: true; precision: mediump; logarithmicDepthBuffer: true;"
             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
             <a-assets>
                 <a-asset-item id="base-model"
@@ -44,52 +45,57 @@
                     </a-entity>
                     <a-entity id="equalizer-container"></a-entity>
                     
-                    <!-- シンプルなパーティクルエフェクト（fallback） -->
+                    <!-- キラキラ輝く青白い星パーティクル -->
                     <a-entity id="simple-particles-container" position="0 0 0">
-                        <!-- 基本パーティクル：小さな光る球体 -->
+                        <!-- 超強化された青白い星パーティクル：キラキラ効果付き -->
                         <a-sphere id="particle-orb1" 
                             position="0.5 0.3 0.2" 
-                            radius="0.02" 
-                            color="#FFD700" 
-                            opacity="0.8"
-                            material="emissive: #FFD700; emissiveIntensity: 0.5"
-                            animation="property: position; to: -0.5 0.8 -0.2; loop: true; dur: 3000; dir: alternate; easing: easeInOutSine">
+                            radius="0.05" 
+                            color="#FFFFFF" 
+                            opacity="1.0"
+                            material="emissive: #00BFFF; emissiveIntensity: 3.0; transparent: false; shader: standard"
+                            animation__move="property: position; to: -0.5 0.8 -0.2; loop: true; dur: 3000; dir: alternate; easing: easeInOutSine"
+                            animation__twinkle="property: material.emissiveIntensity; to: 5.0; loop: true; dur: 800; dir: alternate; easing: easeInOutQuad">
                         </a-sphere>
                         
                         <a-sphere id="particle-orb2" 
                             position="-0.3 0.6 0.1" 
-                            radius="0.025" 
-                            color="#FF6B6B" 
-                            opacity="0.8"
-                            material="emissive: #FF6B6B; emissiveIntensity: 0.5"
-                            animation="property: position; to: 0.7 0.2 -0.3; loop: true; dur: 4000; dir: alternate; easing: easeInOutSine">
+                            radius="0.06" 
+                            color="#FFFFFF" 
+                            opacity="1.0"
+                            material="emissive: #1E90FF; emissiveIntensity: 3.0; transparent: false; shader: standard"
+                            animation__move="property: position; to: 0.7 0.2 -0.3; loop: true; dur: 4000; dir: alternate; easing: easeInOutSine"
+                            animation__twinkle="property: material.emissiveIntensity; to: 5.5; loop: true; dur: 1200; dir: alternate; easing: easeInOutQuad">
                         </a-sphere>
                         
                         <a-sphere id="particle-orb3" 
                             position="0.2 -0.2 0.4" 
-                            radius="0.03" 
-                            color="#4ECDC4" 
-                            opacity="0.8"
-                            material="emissive: #4ECDC4; emissiveIntensity: 0.5"
-                            animation="property: position; to: -0.4 0.5 0.1; loop: true; dur: 3500; dir: alternate; easing: easeInOutSine">
+                            radius="0.04" 
+                            color="#FFFFFF" 
+                            opacity="1.0"
+                            material="emissive: #87CEEB; emissiveIntensity: 3.0; transparent: false; shader: standard"
+                            animation__move="property: position; to: -0.4 0.5 0.1; loop: true; dur: 3500; dir: alternate; easing: easeInOutSine"
+                            animation__twinkle="property: material.emissiveIntensity; to: 4.5; loop: true; dur: 600; dir: alternate; easing: easeInOutQuad">
                         </a-sphere>
                         
                         <a-sphere id="particle-orb4" 
                             position="-0.6 0.1 -0.2" 
-                            radius="0.02" 
-                            color="#9B59B6" 
-                            opacity="0.8"
-                            material="emissive: #9B59B6; emissiveIntensity: 0.5"
-                            animation="property: position; to: 0.4 -0.3 0.5; loop: true; dur: 4500; dir: alternate; easing: easeInOutSine">
+                            radius="0.07" 
+                            color="#FFFFFF" 
+                            opacity="1.0"
+                            material="emissive: #00CED1; emissiveIntensity: 3.0; transparent: false; shader: standard"
+                            animation__move="property: position; to: 0.4 -0.3 0.5; loop: true; dur: 4500; dir: alternate; easing: easeInOutSine"
+                            animation__twinkle="property: material.emissiveIntensity; to: 6.0; loop: true; dur: 900; dir: alternate; easing: easeInOutQuad">
                         </a-sphere>
                         
                         <a-sphere id="particle-orb5" 
                             position="0.1 0.7 -0.3" 
-                            radius="0.025" 
-                            color="#E74C3C" 
-                            opacity="0.8"
-                            material="emissive: #E74C3C; emissiveIntensity: 0.5"
-                            animation="property: position; to: -0.2 -0.1 0.6; loop: true; dur: 3800; dir: alternate; easing: easeInOutSine">
+                            radius="0.055" 
+                            color="#FFFFFF" 
+                            opacity="1.0"
+                            material="emissive: #4169E1; emissiveIntensity: 3.0; transparent: false; shader: standard"
+                            animation__move="property: position; to: -0.2 -0.1 0.6; loop: true; dur: 3800; dir: alternate; easing: easeInOutSine"
+                            animation__twinkle="property: material.emissiveIntensity; to: 5.2; loop: true; dur: 1000; dir: alternate; easing: easeInOutQuad">
                         </a-sphere>
                     </a-entity>
                     
@@ -217,6 +223,9 @@
     </div>
 
     <div id="scanning-overlay">CDのジャケットをスキャンしてください</div>
+    
+    <!-- CSS Overlayによる星空マスク -->
+    <div id="space-mask"></div>
   
   <div id="button-container">
         <button class="social-links" id="website-button">
@@ -298,7 +307,7 @@
             </p>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="script.js?v=5.1"></script>
 </body>
 
 </html>
