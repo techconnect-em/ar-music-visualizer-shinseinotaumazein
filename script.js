@@ -273,58 +273,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.barHeights[i] = this.barHeights[i] + (barHeight - this.barHeights[i]) * this.smoothing;
 
                     try {
-                        if (isSafari) {
-                            // Safari用：スフィア周囲の円形配置
-                            let angle = 0;
-                            if (currentNumBars > 1) {
-                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
-                            }
-                            const x = Math.cos(angle - Math.PI / 2) * radius;
-                            const z = Math.sin(angle - Math.PI / 2) * radius;
-                            const y = sphereBottomY + this.barHeights[i] / 2;
+                        // 統一された円形配置ロジック
+                        let angle = 0;
+                        if (currentNumBars > 1) {
+                            angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
+                        }
+                        const x = Math.cos(angle - Math.PI / 2) * radius;
+                        const z = Math.sin(angle - Math.PI / 2) * radius;
+                        const y = sphereBottomY + this.barHeights[i] / 2;
 
-                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
-                            bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
-                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
-                        } else if (isIOS) {
-                            // iPhone用：スフィア周囲の円形配置
-                            let angle = 0;
-                            if (currentNumBars > 1) {
-                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
-                            }
-                            const x = Math.cos(angle - Math.PI / 2) * radius;
-                            const z = Math.sin(angle - Math.PI / 2) * radius;
-                            const y = sphereBottomY + this.barHeights[i] / 2;
-                            
-                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                        bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
+                        bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
+                        
+                        // デバイス別のバーサイズ調整
+                        if (isIOS) {
                             bar.setAttribute('geometry', `primitive: box; width: 0.08; height: ${this.barHeights[i]}; depth: 0.08`);
-                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         } else if (isMobile) {
-                            // その他モバイル：円形配置
-                            let angle = 0;
-                            if (currentNumBars > 1) {
-                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
-                            }
-                            const x = Math.cos(angle - Math.PI / 2) * radius;
-                            const z = Math.sin(angle - Math.PI / 2) * radius;
-                            const y = sphereBottomY + this.barHeights[i] / 2;
-
-                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
                             bar.setAttribute('geometry', `primitive: box; width: 0.03; height: ${this.barHeights[i]}; depth: 0.03`);
-                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         } else {
-                            // デスクトップ：通常の処理
-                            let angle = 0;
-                            if (currentNumBars > 1) {
-                                angle = (i / (currentNumBars - 1)) * Math.PI - (Math.PI / 2);
-                            }
-                            const x = Math.cos(angle - Math.PI / 2) * radius;
-                            const z = Math.sin(angle - Math.PI / 2) * radius;
-                            const y = sphereBottomY + this.barHeights[i] / 2;
-
-                            bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
                             bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
-                            bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         }
                     } catch (barError) {
                         console.error(`Error updating bar ${i}:`, barError);
@@ -399,17 +366,21 @@ document.addEventListener('DOMContentLoaded', () => {
    audioControl.addEventListener('click', async () => {
         try {
             console.log('Audio control clicked');
-            console.log('🔧 Audio control - iOS:', isIOS, 'Mobile:', isMobile);
+            console.log('🔧 Audio control - iOS:', isIOS, 'Mobile:', isMobile, 'Chrome:', isChrome);
             
             // AudioContextが未初期化またはsuspended状態の場合、初期化
             if (!audioContext || audioContext.state === 'suspended') {
                 console.log('Initializing audio analyser...');
                 const success = await initAudioAnalyser();
-                if (!success && isIOS) {
-                    console.log('Audio analyser init failed, retrying for iOS...');
-                    // iPhone用のリトライ
+                if (!success) {
+                    console.log('Audio analyser init failed, retrying...');
+                    // リトライ（iPhone Chrome用）
                     setTimeout(async () => {
-                        await initAudioAnalyser();
+                        try {
+                            await initAudioAnalyser();
+                        } catch (retryError) {
+                            console.error('Retry failed:', retryError);
+                        }
                     }, 1000);
                 }
             }
@@ -668,12 +639,20 @@ document.addEventListener('DOMContentLoaded', () => {
             this.spaceMask = document.getElementById('space-mask');
             this.time = 0;
             
+            // 星空マスクを即座にアクティブ化
+            if (this.spaceMask) {
+                this.spaceMask.classList.add('active');
+                console.log('Space mask activated immediately');
+            }
+            
             // Three.jsパーティクル初期化
             const initParticles = () => {
                 if (document.querySelector('a-scene').hasLoaded) {
                     initThreeJsParticles();
+                    // 念のため再度マスクをアクティブ化
                     if (this.spaceMask) {
                         this.spaceMask.classList.add('active');
+                        console.log('Space mask re-activated after scene load');
                     }
                 } else {
                     setTimeout(initParticles, 500);
