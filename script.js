@@ -470,35 +470,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('orbit2-container'),
                 document.getElementById('orbit3-container'),
                 document.getElementById('orbit4-container'),
-                document.getElementById('orbit5-container')
+                document.getElementById('orbit5-container'),
+                document.getElementById('orbit6-container'),
+                document.getElementById('orbit7-container'),
+                document.getElementById('orbit8-container')
             ];
             this.planetOrbits = [
                 document.getElementById('planet1-orbit'),
                 document.getElementById('planet2-orbit'),
                 document.getElementById('planet3-orbit'),
                 document.getElementById('planet4-orbit'),
-                document.getElementById('planet5-orbit')
+                document.getElementById('planet5-orbit'),
+                document.getElementById('planet6-orbit'),
+                document.getElementById('planet7-orbit'),
+                document.getElementById('planet8-orbit')
             ];
             this.planets = [
                 document.getElementById('planet1'),
                 document.getElementById('planet2'),
                 document.getElementById('planet3'),
                 document.getElementById('planet4'),
-                document.getElementById('planet5')
+                document.getElementById('planet5'),
+                document.getElementById('planet6'),
+                document.getElementById('planet7'),
+                document.getElementById('planet8')
             ];
             this.centralStar = document.getElementById('central-star');
             
             // 実際の太陽系軌道速度（公転周期に基づく）
-            this.orbitSpeeds = [6000, 10000, 15000, 25000, 40000]; // 水星、金星、地球、火星、木星
+            this.orbitSpeeds = [6000, 10000, 15000, 25000, 40000, 60000, 90000, 120000]; // 8惑星
             // 実際の惑星サイズ（相対的）
-            this.planetRadii = [0.025, 0.038, 0.04, 0.034, 0.08]; // 水星、金星、地球、火星、木星
+            this.planetRadii = [0.025, 0.038, 0.04, 0.034, 0.08, 0.075, 0.055, 0.053]; // 8惑星
             // 実際の軌道傾斜角
             this.orbitRotations = [
                 {x: 0, y: 0, z: 7},      // 水星: 7°
                 {x: 0, y: 0, z: 3.4},    // 金星: 3.4°
                 {x: 0, y: 0, z: 0},      // 地球: 0° (基準)
                 {x: 0, y: 0, z: 1.85},   // 火星: 1.85°
-                {x: 0, y: 0, z: 1.3}     // 木星: 1.3°
+                {x: 0, y: 0, z: 1.3},    // 木星: 1.3°
+                {x: 0, y: 0, z: 2.5},    // 土星: 2.5°
+                {x: 0, y: 0, z: 0.77},   // 天王星: 0.77°
+                {x: 0, y: 0, z: 1.77}    // 海王星: 1.77°
             ];
             
             // 初期化時に軌道と惑星の設定を固定

@@ -114,7 +114,7 @@
                             <!-- 水星 -->
                             <a-entity id="planet1-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
                                 <a-sphere id="planet1" 
-                                    position="0.655 0 0" 
+                                    position="0.65 0 0" 
                                     radius="0.025" 
                                     color="#8C7853" 
                                     opacity="0.9"
@@ -136,7 +136,7 @@
                             <!-- 金星 -->
                             <a-entity id="planet2-orbit" animation="property: rotation; to: 0 -360 0; loop: true; dur: 10000; easing: linear">
                                 <a-sphere id="planet2" 
-                                    position="0.855 0 0" 
+                                    position="0.85 0 0" 
                                     radius="0.038" 
                                     color="#FFC649" 
                                     opacity="0.9"
@@ -158,7 +158,7 @@
                             <!-- 地球 -->
                             <a-entity id="planet3-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
                                 <a-sphere id="planet3" 
-                                    position="1.055 0 0" 
+                                    position="1.05 0 0" 
                                     radius="0.04" 
                                     color="#6B93D6" 
                                     opacity="0.9"
@@ -180,7 +180,7 @@
                             <!-- 火星 -->
                             <a-entity id="planet4-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 25000; easing: linear">
                                 <a-sphere id="planet4" 
-                                    position="1.305 0 0" 
+                                    position="1.30 0 0" 
                                     radius="0.034" 
                                     color="#CD5C5C" 
                                     opacity="0.9"
@@ -202,7 +202,7 @@
                             <!-- 木星 -->
                             <a-entity id="planet5-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 40000; easing: linear">
                                 <a-sphere id="planet5" 
-                                    position="1.655 0 0" 
+                                    position="1.65 0 0" 
                                     radius="0.08" 
                                     color="#D8CA9D" 
                                     opacity="0.9"
@@ -211,6 +211,81 @@
                             </a-entity>
                         </a-entity>
                         
+                        <!-- 土星軌道 -->
+                        <a-entity id="orbit6-container" rotation="0 0 2.5">
+                            <a-ring id="orbit6-ring" 
+                                position="0 0 0" 
+                                radius-inner="2.1" 
+                                radius-outer="2.11" 
+                                color="#FAD5A5" 
+                                opacity="0.25"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <!-- 土星 -->
+                            <a-entity id="planet6-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 60000; easing: linear">
+                                <a-sphere id="planet6" 
+                                    position="2.10 0 0" 
+                                    radius="0.075" 
+                                    color="#FAD5A5" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 0.1; roughness: 0.2; emissive: #DEB887; emissiveIntensity: 0.25">
+                                </a-sphere>
+                                <!-- 土星の輪 -->
+                                <a-ring position="2.10 0 0" 
+                                    radius-inner="0.08" 
+                                    radius-outer="0.12" 
+                                    color="#C0C0C0" 
+                                    opacity="0.6"
+                                    rotation="90 0 0"
+                                    material="transparent: true; side: double">
+                                </a-ring>
+                            </a-entity>
+                        </a-entity>
+                        
+                        <!-- 天王星軌道 -->
+                        <a-entity id="orbit7-container" rotation="0 0 0.77">
+                            <a-ring id="orbit7-ring" 
+                                position="0 0 0" 
+                                radius-inner="2.6" 
+                                radius-outer="2.61" 
+                                color="#4FD0E7" 
+                                opacity="0.2"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <!-- 天王星 -->
+                            <a-entity id="planet7-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 90000; easing: linear">
+                                <a-sphere id="planet7" 
+                                    position="2.60 0 0" 
+                                    radius="0.055" 
+                                    color="#4FD0E7" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 0.3; roughness: 0.1; emissive: #40E0D0; emissiveIntensity: 0.3">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
+                        
+                        <!-- 海王星軌道 -->
+                        <a-entity id="orbit8-container" rotation="0 0 1.77">
+                            <a-ring id="orbit8-ring" 
+                                position="0 0 0" 
+                                radius-inner="3.2" 
+                                radius-outer="3.21" 
+                                color="#4169E1" 
+                                opacity="0.2"
+                                material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
+                            </a-ring>
+                            <!-- 海王星 -->
+                            <a-entity id="planet8-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 120000; easing: linear">
+                                <a-sphere id="planet8" 
+                                    position="3.20 0 0" 
+                                    radius="0.053" 
+                                    color="#4169E1" 
+                                    opacity="0.9"
+                                    material="shader: standard; metalness: 0.2; roughness: 0.1; emissive: #0000CD; emissiveIntensity: 0.4">
+                                </a-sphere>
+                            </a-entity>
+                        </a-entity>
+
                         <!-- 太陽 -->
                         <a-sphere id="central-star" 
                             position="0 0 0" 
@@ -311,7 +386,7 @@
             </p>
         </div>
     </div>
-    <script src="script.js?v=5.5"></script>
+    <script src="script.js?v=5.6"></script>
 </body>
 
 </html>
