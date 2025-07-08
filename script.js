@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const durationDisplay = document.getElementById('duration');
 
     const FFT_SIZE = 256;
-    const numBars = 16; // 簡素化のため16本に固定
+    const numBars = 32; // より詳細な音楽表現のため32本に増加
     let bars = [];
     let isLyricsVisible = false;
 
@@ -182,12 +182,22 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 for (let i = 0; i < numBars; i++) {
                     const bar = document.createElement('a-entity');
-                    bar.setAttribute('geometry', `primitive: box; width: 0.02; height: 0.1; depth: 0.02`);
-                    bar.setAttribute('material', `color: yellow`);
+                    bar.setAttribute('geometry', `primitive: box; width: 0.012; height: 0.1; depth: 0.012`);
+                    // リッチなマテリアル設定：グラデーション効果
+                    const hue = (i / numBars) * 360; // 色相を360度で分散
+                    bar.setAttribute('material', {
+                        shader: 'standard',
+                        color: `hsl(${hue}, 80%, 60%)`,
+                        emissive: `hsl(${hue}, 60%, 30%)`,
+                        emissiveIntensity: 0.3,
+                        metalness: 0.2,
+                        roughness: 0.1,
+                        transparent: false
+                    });
                     equalizerContainer.appendChild(bar);
                     bars.push(bar);
                 }
-                console.log('Equalizer bars initialized successfully.');
+                console.log('Equalizer bars initialized with rich materials.');
             } catch (error) {
                 console.error('Error initializing equalizer bars:', error);
             }
@@ -203,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 音声データの解析と視覚化
     AFRAME.registerComponent('audio-visualizer', {
         init: function () {
-            this.barWidth = 0.02;
+            this.barWidth = 0.012; // より細いバー
             this.barColor = 'yellow';
             this.equalizerRadius = 1.1;
             this.smoothing = 0.3;
@@ -272,6 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     this.barHeights[i] = this.barHeights[i] + (barHeight - this.barHeights[i]) * this.smoothing;
 
+                    // 動的な色変更（音の強度に応じて）
+                    const intensity = Math.min(freqSum / 255, 1.0);
+                    const hue = (i / currentNumBars) * 360;
+                    const saturation = 60 + intensity * 40; // 音が大きいほど鮮やか
+                    const lightness = 40 + intensity * 40;  // 音が大きいほど明るく
+                    const emissiveIntensity = 0.2 + intensity * 0.6; // 音が大きいほど光る
+
                     try {
                         // 統一された円形配置ロジック
                         let angle = 0;
@@ -285,11 +302,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         bar.setAttribute('position', `${targetPosition.x + x} ${y} ${targetPosition.z + z}`);
                         bar.setAttribute('rotation', `0 ${-angle * 180 / Math.PI - 90} 0`);
                         
-                        // デバイス別のバーサイズ調整
+                        // 動的マテリアル更新
+                        bar.setAttribute('material', {
+                            shader: 'standard',
+                            color: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+                            emissive: `hsl(${hue}, 60%, 20%)`,
+                            emissiveIntensity: emissiveIntensity,
+                            metalness: 0.2,
+                            roughness: 0.1
+                        });
+                        
+                        // デバイス別のバーサイズ調整（全体的に細く）
                         if (isIOS) {
-                            bar.setAttribute('geometry', `primitive: box; width: 0.08; height: ${this.barHeights[i]}; depth: 0.08`);
+                            bar.setAttribute('geometry', `primitive: box; width: 0.05; height: ${this.barHeights[i]}; depth: 0.05`);
                         } else if (isMobile) {
-                            bar.setAttribute('geometry', `primitive: box; width: 0.03; height: ${this.barHeights[i]}; depth: 0.03`);
+                            bar.setAttribute('geometry', `primitive: box; width: 0.018; height: ${this.barHeights[i]}; depth: 0.018`);
                         } else {
                             bar.setAttribute('geometry', `primitive: box; width: ${this.barWidth}; height: ${this.barHeights[i]}; depth: ${this.barWidth}`);
                         }
@@ -461,17 +488,17 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             this.centralStar = document.getElementById('central-star');
             
-            // 固定の軌道速度（音楽に反応しない安定した軌道）
-            this.orbitSpeeds = [8000, 12000, 18000, 25000, 30000];
-            // 固定の惑星サイズ
-            this.planetRadii = [0.03, 0.04, 0.05, 0.06, 0.04];
-            // 固定の軌道傾斜
+            // 実際の太陽系軌道速度（公転周期に基づく）
+            this.orbitSpeeds = [6000, 10000, 15000, 25000, 40000]; // 水星、金星、地球、火星、木星
+            // 実際の惑星サイズ（相対的）
+            this.planetRadii = [0.025, 0.038, 0.04, 0.034, 0.08]; // 水星、金星、地球、火星、木星
+            // 実際の軌道傾斜角
             this.orbitRotations = [
-                {x: 0, y: 0, z: 15},
-                {x: 30, y: 0, z: 45},
-                {x: 60, y: 0, z: -30},
-                {x: -45, y: 0, z: 60},
-                {x: 90, y: 0, z: 0}
+                {x: 0, y: 0, z: 7},      // 水星: 7°
+                {x: 0, y: 0, z: 3.4},    // 金星: 3.4°
+                {x: 0, y: 0, z: 0},      // 地球: 0° (基準)
+                {x: 0, y: 0, z: 1.85},   // 火星: 1.85°
+                {x: 0, y: 0, z: 1.3}     // 木星: 1.3°
             ];
             
             // 初期化時に軌道と惑星の設定を固定
@@ -479,15 +506,15 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         setupStableOrbits: function () {
-            // 中心の星の固定設定
+            // 太陽の設定
             if (this.centralStar) {
-                this.centralStar.setAttribute('radius', 0.1);
+                this.centralStar.setAttribute('radius', 0.12);
                 this.centralStar.setAttribute('material', {
                     shader: 'standard',
-                    metalness: 0.2,
-                    roughness: 0.1,
-                    emissive: '#FFF700',
-                    emissiveIntensity: 0.6
+                    metalness: 0.1,
+                    roughness: 0.0,
+                    emissive: '#FF6B00',
+                    emissiveIntensity: 0.8
                 });
             }
             
