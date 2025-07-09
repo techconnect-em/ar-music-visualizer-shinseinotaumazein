@@ -45,59 +45,6 @@
                     </a-entity>
                     <a-entity id="equalizer-container"></a-entity>
                     
-                    <!-- キラキラ輝く青白い星パーティクル -->
-                    <a-entity id="simple-particles-container" position="0 0 0">
-                        <!-- 超強化された青白い星パーティクル：キラキラ効果付き -->
-                        <a-sphere id="particle-orb1" 
-                            position="0.5 0.3 0.2" 
-                            radius="0.05" 
-                            color="#FFFFFF" 
-                            opacity="1.0"
-                            material="emissive: #00BFFF; emissiveIntensity: 3.0; transparent: false; shader: standard"
-                            animation__move="property: position; to: -0.5 0.8 -0.2; loop: true; dur: 3000; dir: alternate; easing: easeInOutSine"
-                            animation__twinkle="property: material.emissiveIntensity; to: 5.0; loop: true; dur: 800; dir: alternate; easing: easeInOutQuad">
-                        </a-sphere>
-                        
-                        <a-sphere id="particle-orb2" 
-                            position="-0.3 0.6 0.1" 
-                            radius="0.06" 
-                            color="#FFFFFF" 
-                            opacity="1.0"
-                            material="emissive: #1E90FF; emissiveIntensity: 3.0; transparent: false; shader: standard"
-                            animation__move="property: position; to: 0.7 0.2 -0.3; loop: true; dur: 4000; dir: alternate; easing: easeInOutSine"
-                            animation__twinkle="property: material.emissiveIntensity; to: 5.5; loop: true; dur: 1200; dir: alternate; easing: easeInOutQuad">
-                        </a-sphere>
-                        
-                        <a-sphere id="particle-orb3" 
-                            position="0.2 -0.2 0.4" 
-                            radius="0.04" 
-                            color="#FFFFFF" 
-                            opacity="1.0"
-                            material="emissive: #87CEEB; emissiveIntensity: 3.0; transparent: false; shader: standard"
-                            animation__move="property: position; to: -0.4 0.5 0.1; loop: true; dur: 3500; dir: alternate; easing: easeInOutSine"
-                            animation__twinkle="property: material.emissiveIntensity; to: 4.5; loop: true; dur: 600; dir: alternate; easing: easeInOutQuad">
-                        </a-sphere>
-                        
-                        <a-sphere id="particle-orb4" 
-                            position="-0.6 0.1 -0.2" 
-                            radius="0.07" 
-                            color="#FFFFFF" 
-                            opacity="1.0"
-                            material="emissive: #00CED1; emissiveIntensity: 3.0; transparent: false; shader: standard"
-                            animation__move="property: position; to: 0.4 -0.3 0.5; loop: true; dur: 4500; dir: alternate; easing: easeInOutSine"
-                            animation__twinkle="property: material.emissiveIntensity; to: 6.0; loop: true; dur: 900; dir: alternate; easing: easeInOutQuad">
-                        </a-sphere>
-                        
-                        <a-sphere id="particle-orb5" 
-                            position="0.1 0.7 -0.3" 
-                            radius="0.055" 
-                            color="#FFFFFF" 
-                            opacity="1.0"
-                            material="emissive: #4169E1; emissiveIntensity: 3.0; transparent: false; shader: standard"
-                            animation__move="property: position; to: -0.2 -0.1 0.6; loop: true; dur: 3800; dir: alternate; easing: easeInOutSine"
-                            animation__twinkle="property: material.emissiveIntensity; to: 5.2; loop: true; dur: 1000; dir: alternate; easing: easeInOutQuad">
-                        </a-sphere>
-                    </a-entity>
                     
                     <!-- 実際の太陽系軌道システム -->
                     <a-entity id="orbital-system" position="0 0 0">
@@ -105,8 +52,8 @@
                         <a-entity id="orbit1-container" rotation="0 0 7">
                             <a-ring id="orbit1-ring" 
                                 position="0 0 0" 
-                                radius-inner="0.65" 
-                                radius-outer="0.66" 
+                                radius-inner="0.78" 
+                                radius-outer="0.79" 
                                 color="#8C7853" 
                                 opacity="0.3"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -114,7 +61,7 @@
                             <!-- 水星 -->
                             <a-entity id="planet1-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
                                 <a-sphere id="planet1" 
-                                    position="0.65 0 0" 
+                                    position="0.78 0 0" 
                                     radius="0.025" 
                                     color="#8C7853" 
                                     opacity="0.9"
@@ -127,8 +74,8 @@
                         <a-entity id="orbit2-container" rotation="0 0 3.4">
                             <a-ring id="orbit2-ring" 
                                 position="0 0 0" 
-                                radius-inner="0.85" 
-                                radius-outer="0.86" 
+                                radius-inner="1.02" 
+                                radius-outer="1.03" 
                                 color="#FFC649" 
                                 opacity="0.3"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -136,7 +83,7 @@
                             <!-- 金星 -->
                             <a-entity id="planet2-orbit" animation="property: rotation; to: 0 -360 0; loop: true; dur: 10000; easing: linear">
                                 <a-sphere id="planet2" 
-                                    position="0.85 0 0" 
+                                    position="1.02 0 0" 
                                     radius="0.038" 
                                     color="#FFC649" 
                                     opacity="0.9"
@@ -149,8 +96,8 @@
                         <a-entity id="orbit3-container" rotation="0 0 0">
                             <a-ring id="orbit3-ring" 
                                 position="0 0 0" 
-                                radius-inner="1.05" 
-                                radius-outer="1.06" 
+                                radius-inner="1.26" 
+                                radius-outer="1.27" 
                                 color="#6B93D6" 
                                 opacity="0.3"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -158,7 +105,7 @@
                             <!-- 地球 -->
                             <a-entity id="planet3-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
                                 <a-sphere id="planet3" 
-                                    position="1.05 0 0" 
+                                    position="1.26 0 0" 
                                     radius="0.04" 
                                     color="#6B93D6" 
                                     opacity="0.9"
@@ -171,8 +118,8 @@
                         <a-entity id="orbit4-container" rotation="0 0 1.85">
                             <a-ring id="orbit4-ring" 
                                 position="0 0 0" 
-                                radius-inner="1.3" 
-                                radius-outer="1.31" 
+                                radius-inner="1.56" 
+                                radius-outer="1.57" 
                                 color="#CD5C5C" 
                                 opacity="0.3"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -180,7 +127,7 @@
                             <!-- 火星 -->
                             <a-entity id="planet4-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 25000; easing: linear">
                                 <a-sphere id="planet4" 
-                                    position="1.30 0 0" 
+                                    position="1.56 0 0" 
                                     radius="0.034" 
                                     color="#CD5C5C" 
                                     opacity="0.9"
@@ -193,8 +140,8 @@
                         <a-entity id="orbit5-container" rotation="0 0 1.3">
                             <a-ring id="orbit5-ring" 
                                 position="0 0 0" 
-                                radius-inner="1.65" 
-                                radius-outer="1.66" 
+                                radius-inner="1.98" 
+                                radius-outer="1.99" 
                                 color="#D8CA9D" 
                                 opacity="0.25"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -202,7 +149,7 @@
                             <!-- 木星 -->
                             <a-entity id="planet5-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 40000; easing: linear">
                                 <a-sphere id="planet5" 
-                                    position="1.65 0 0" 
+                                    position="1.98 0 0" 
                                     radius="0.08" 
                                     color="#D8CA9D" 
                                     opacity="0.9"
@@ -215,8 +162,8 @@
                         <a-entity id="orbit6-container" rotation="0 0 2.5">
                             <a-ring id="orbit6-ring" 
                                 position="0 0 0" 
-                                radius-inner="2.1" 
-                                radius-outer="2.11" 
+                                radius-inner="2.52" 
+                                radius-outer="2.53" 
                                 color="#FAD5A5" 
                                 opacity="0.25"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -224,14 +171,14 @@
                             <!-- 土星 -->
                             <a-entity id="planet6-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 60000; easing: linear">
                                 <a-sphere id="planet6" 
-                                    position="2.10 0 0" 
+                                    position="2.52 0 0" 
                                     radius="0.075" 
                                     color="#FAD5A5" 
                                     opacity="0.9"
                                     material="shader: standard; metalness: 0.1; roughness: 0.2; emissive: #DEB887; emissiveIntensity: 0.25">
                                 </a-sphere>
                                 <!-- 土星の輪 -->
-                                <a-ring position="2.10 0 0" 
+                                <a-ring position="2.52 0 0" 
                                     radius-inner="0.08" 
                                     radius-outer="0.12" 
                                     color="#C0C0C0" 
@@ -246,8 +193,8 @@
                         <a-entity id="orbit7-container" rotation="0 0 0.77">
                             <a-ring id="orbit7-ring" 
                                 position="0 0 0" 
-                                radius-inner="2.6" 
-                                radius-outer="2.61" 
+                                radius-inner="3.12" 
+                                radius-outer="3.13" 
                                 color="#4FD0E7" 
                                 opacity="0.2"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -255,7 +202,7 @@
                             <!-- 天王星 -->
                             <a-entity id="planet7-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 90000; easing: linear">
                                 <a-sphere id="planet7" 
-                                    position="2.60 0 0" 
+                                    position="3.12 0 0" 
                                     radius="0.055" 
                                     color="#4FD0E7" 
                                     opacity="0.9"
@@ -268,8 +215,8 @@
                         <a-entity id="orbit8-container" rotation="0 0 1.77">
                             <a-ring id="orbit8-ring" 
                                 position="0 0 0" 
-                                radius-inner="3.2" 
-                                radius-outer="3.21" 
+                                radius-inner="3.84" 
+                                radius-outer="3.85" 
                                 color="#4169E1" 
                                 opacity="0.2"
                                 material="transparent: true; side: double; shader: standard; metalness: 0.8; roughness: 0.2">
@@ -277,7 +224,7 @@
                             <!-- 海王星 -->
                             <a-entity id="planet8-orbit" animation="property: rotation; to: 0 360 0; loop: true; dur: 120000; easing: linear">
                                 <a-sphere id="planet8" 
-                                    position="3.20 0 0" 
+                                    position="3.84 0 0" 
                                     radius="0.053" 
                                     color="#4169E1" 
                                     opacity="0.9"
@@ -386,7 +333,7 @@
             </p>
         </div>
     </div>
-    <script src="script.js?v=5.6"></script>
+    <script src="script.js?v=5.7"></script>
 </body>
 
 </html>

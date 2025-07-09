@@ -64,15 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleLyricsButton = document.getElementById('toggle-lyrics');
     const websiteButton = document.getElementById('website-button');
 
-    // シンプルパーティクル要素の取得
-    const simpleParticlesContainer = document.getElementById('simple-particles-container');
-    const particleOrbs = [
-        document.getElementById('particle-orb1'),
-        document.getElementById('particle-orb2'),
-        document.getElementById('particle-orb3'),
-        document.getElementById('particle-orb4'),
-        document.getElementById('particle-orb5')
-    ];
     
     // 惑星軌道システム要素の取得
     const orbitalSystem = document.getElementById('orbital-system');
