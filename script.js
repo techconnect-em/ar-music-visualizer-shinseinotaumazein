@@ -534,10 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         emissiveIntensity: 0.3
                     });
                     
-                    // 軌道の回転を固定速度で設定
+                    // 軌道の回転を固定速度で設定（実際の太陽系：すべて反時計回り）
                     this.planetOrbits[index].setAttribute('animation', {
                         property: 'rotation',
-                        to: index % 2 === 0 ? '0 360 0' : '0 -360 0',
+                        to: '0 -360 0', // すべての惑星が反時計回りに公転
                         loop: true,
                         dur: this.orbitSpeeds[index],
                         easing: 'linear'
