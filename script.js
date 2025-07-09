@@ -558,8 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Three.js直接使用の星パーティクルシステム
+    // Three.js直接使用の星パーティクルシステム - 3D深度強化版
     let threeJsParticleSystem = null;
+    let nearParticleSystem = null;
+    let farParticleSystem = null;
     
     function initThreeJsParticles() {
         try {
@@ -574,96 +576,200 @@ document.addEventListener('DOMContentLoaded', () => {
             const scene = sceneEl.object3D;
             const camera = cameraEl.object3D;
         
-        // パーティクルジオメトリとマテリアル
-        const geometry = new THREE.BufferGeometry();
-        const particleCount = 50;
+        // レイヤー1: 遠方の星（小さく暗い）
+        const farGeometry = new THREE.BufferGeometry();
+        const farParticleCount = 200;
         
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
+        const farPositions = new Float32Array(farParticleCount * 3);
+        const farColors = new Float32Array(farParticleCount * 3);
+        const farSizes = new Float32Array(farParticleCount);
         
-        // パーティクルの初期配置
-        for (let i = 0; i < particleCount; i++) {
+        for (let i = 0; i < farParticleCount; i++) {
             const i3 = i * 3;
             
-            // 球状に配置
-            const radius = 2 + Math.random() * 3;
+            // 遠方の球状配置（8-15単位離れた位置）
+            const radius = 8 + Math.random() * 7;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.random() * Math.PI;
             
-            positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-            positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-            positions[i3 + 2] = radius * Math.cos(phi);
+            farPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            farPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+            farPositions[i3 + 2] = radius * Math.cos(phi);
             
-            // 青白い色
-            colors[i3] = 0.5 + Math.random() * 0.5;     // R
-            colors[i3 + 1] = 0.8 + Math.random() * 0.2; // G
-            colors[i3 + 2] = 1.0;                       // B
+            // 遠方の星は暗めの白色
+            const brightness = 0.3 + Math.random() * 0.4;
+            farColors[i3] = brightness;
+            farColors[i3 + 1] = brightness;
+            farColors[i3 + 2] = brightness + Math.random() * 0.2;
             
-            sizes[i] = 0.1 + Math.random() * 0.2;
+            farSizes[i] = 0.02 + Math.random() * 0.04;
         }
         
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        farGeometry.setAttribute('position', new THREE.BufferAttribute(farPositions, 3));
+        farGeometry.setAttribute('color', new THREE.BufferAttribute(farColors, 3));
+        farGeometry.setAttribute('size', new THREE.BufferAttribute(farSizes, 1));
         
-        // シェーダーマテリアル
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 1.0 },
-                audioIntensity: { value: 0.0 }
-            },
-            vertexShader: [
-                'attribute float size;',
-                'uniform float time;',
-                'uniform float audioIntensity;',
-                'varying vec3 vColor;',
-                '',
-                'void main() {',
-                '    vColor = color;',
-                '    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
-                '    ',
-                '    float dynamicSize = size * (1.0 + audioIntensity * 2.0);',
-                '    ',
-                '    gl_PointSize = dynamicSize * (300.0 / -mvPosition.z);',
-                '    gl_Position = projectionMatrix * mvPosition;',
-                '}'
-            ].join('\n'),
-            fragmentShader: [
-                'uniform float time;',
-                'uniform float audioIntensity;',
-                'varying vec3 vColor;',
-                '',
-                'void main() {',
-                '    vec2 coord = gl_PointCoord - vec2(0.5);',
-                '    float dist = length(coord);',
-                '    ',
-                '    if (dist > 0.5) discard;',
-                '    ',
-                '    float alpha = 1.0 - dist * 2.0;',
-                '    float glow = 0.8 + sin(time * 5.0 + gl_FragCoord.x * 0.01) * 0.2;',
-                '    ',
-                '    vec3 finalColor = vColor * (glow + audioIntensity);',
-                '    ',
-                '    gl_FragColor = vec4(finalColor, alpha);',
-                '}'
-            ].join('\n'),
-            blending: THREE.AdditiveBlending,
-            depthTest: false,
-            transparent: true,
-            vertexColors: true
-        });
+        // レイヤー2: 中距離の星（中間サイズ）
+        const midGeometry = new THREE.BufferGeometry();
+        const midParticleCount = 100;
         
-        threeJsParticleSystem = new THREE.Points(geometry, material);
-        scene.add(threeJsParticleSystem);
+        const midPositions = new Float32Array(midParticleCount * 3);
+        const midColors = new Float32Array(midParticleCount * 3);
+        const midSizes = new Float32Array(midParticleCount);
         
-        console.log('Three.js particle system initialized');
+        for (let i = 0; i < midParticleCount; i++) {
+            const i3 = i * 3;
+            
+            // 中距離の球状配置（4-8単位離れた位置）
+            const radius = 4 + Math.random() * 4;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            
+            midPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            midPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+            midPositions[i3 + 2] = radius * Math.cos(phi);
+            
+            // 中距離は少し明るめ
+            const brightness = 0.5 + Math.random() * 0.3;
+            midColors[i3] = brightness;
+            midColors[i3 + 1] = brightness + Math.random() * 0.1;
+            midColors[i3 + 2] = brightness + Math.random() * 0.2;
+            
+            midSizes[i] = 0.05 + Math.random() * 0.06;
+        }
+        
+        midGeometry.setAttribute('position', new THREE.BufferAttribute(midPositions, 3));
+        midGeometry.setAttribute('color', new THREE.BufferAttribute(midColors, 3));
+        midGeometry.setAttribute('size', new THREE.BufferAttribute(midSizes, 1));
+        
+        // レイヤー3: 近距離の星（大きく明るい）
+        const nearGeometry = new THREE.BufferGeometry();
+        const nearParticleCount = 50;
+        
+        const nearPositions = new Float32Array(nearParticleCount * 3);
+        const nearColors = new Float32Array(nearParticleCount * 3);
+        const nearSizes = new Float32Array(nearParticleCount);
+        
+        for (let i = 0; i < nearParticleCount; i++) {
+            const i3 = i * 3;
+            
+            // 近距離の球状配置（2-4単位離れた位置）
+            const radius = 2 + Math.random() * 2;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            
+            nearPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            nearPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+            nearPositions[i3 + 2] = radius * Math.cos(phi);
+            
+            // 近距離は明るく、色のバリエーション
+            const starType = Math.random();
+            if (starType < 0.6) {
+                // 白色星
+                nearColors[i3] = 0.8 + Math.random() * 0.2;
+                nearColors[i3 + 1] = 0.8 + Math.random() * 0.2;
+                nearColors[i3 + 2] = 1.0;
+            } else if (starType < 0.8) {
+                // 青色星
+                nearColors[i3] = 0.5 + Math.random() * 0.3;
+                nearColors[i3 + 1] = 0.7 + Math.random() * 0.3;
+                nearColors[i3 + 2] = 1.0;
+            } else {
+                // 黄色星
+                nearColors[i3] = 1.0;
+                nearColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+                nearColors[i3 + 2] = 0.6 + Math.random() * 0.2;
+            }
+            
+            nearSizes[i] = 0.08 + Math.random() * 0.12;
+        }
+        
+        nearGeometry.setAttribute('position', new THREE.BufferAttribute(nearPositions, 3));
+        nearGeometry.setAttribute('color', new THREE.BufferAttribute(nearColors, 3));
+        nearGeometry.setAttribute('size', new THREE.BufferAttribute(nearSizes, 1));
+        
+        // 高度なシェーダーマテリアル（距離に応じたフェード効果）
+        const createStarMaterial = (depthLayer) => {
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 1.0 },
+                    audioIntensity: { value: 0.0 },
+                    depthFactor: { value: depthLayer } // 0.3(遠), 0.6(中), 1.0(近)
+                },
+                vertexShader: [
+                    'attribute float size;',
+                    'uniform float time;',
+                    'uniform float audioIntensity;',
+                    'uniform float depthFactor;',
+                    'varying vec3 vColor;',
+                    'varying float vDepth;',
+                    '',
+                    'void main() {',
+                    '    vColor = color;',
+                    '    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+                    '    vDepth = -mvPosition.z / 10.0;', // 深度情報を渡す
+
+                    '    ',
+                    '    float dynamicSize = size * (1.0 + audioIntensity * depthFactor);',
+                    '    float twinkle = 0.8 + 0.2 * sin(time * 3.0 + position.x * 10.0);',
+                    '    ',
+                    '    gl_PointSize = dynamicSize * twinkle * (300.0 / -mvPosition.z);',
+                    '    gl_Position = projectionMatrix * mvPosition;',
+                    '}'
+                ].join('\n'),
+                fragmentShader: [
+                    'uniform float time;',
+                    'uniform float audioIntensity;',
+                    'uniform float depthFactor;',
+                    'varying vec3 vColor;',
+                    'varying float vDepth;',
+                    '',
+                    'void main() {',
+                    '    vec2 coord = gl_PointCoord - vec2(0.5);',
+                    '    float dist = length(coord);',
+                    '    ',
+                    '    if (dist > 0.5) discard;',
+                    '    ',
+                    '    // 星の形状（中心が明るく、外側にフェード）',
+                    '    float alpha = pow(1.0 - dist * 2.0, 2.0);',
+                    '    float glow = 0.6 + 0.4 * sin(time * 2.0 + vDepth * 5.0);',
+                    '    ',
+                    '    // 距離に応じたフェード効果',
+                    '    float depthFade = 1.0 - clamp(vDepth * 0.1, 0.0, 0.7);',
+                    '    ',
+                    '    vec3 finalColor = vColor * (glow + audioIntensity * depthFactor);',
+                    '    float finalAlpha = alpha * depthFade * (0.6 + 0.4 * depthFactor);',
+                    '    ',
+                    '    gl_FragColor = vec4(finalColor, finalAlpha);',
+                    '}'
+                ].join('\n'),
+                blending: THREE.AdditiveBlending,
+                depthTest: true,
+                transparent: true,
+                vertexColors: true
+            });
+        };
+        
+        // 3つのレイヤーを作成
+        farParticleSystem = new THREE.Points(farGeometry, createStarMaterial(0.3));
+        const midParticleSystem = new THREE.Points(midGeometry, createStarMaterial(0.6));
+        nearParticleSystem = new THREE.Points(nearGeometry, createStarMaterial(1.0));
+        
+        // すべてのパーティクルシステムをシーンに追加
+        scene.add(farParticleSystem);
+        scene.add(midParticleSystem);
+        scene.add(nearParticleSystem);
+        
+        // メインの参照用（後方互換性）
+        threeJsParticleSystem = nearParticleSystem;
+        
+        console.log('Enhanced 3D star field initialized with depth layers');
         } catch (error) {
             console.error('Error initializing Three.js particles:', error);
         }
     }
     
-    // 音楽反応とマスク制御（Three.jsパーティクル一時無効）
+    // 音楽反応とマスク制御（強化された3D星空システム）
     AFRAME.registerComponent('enhanced-particle-controller', {
         init: function () {
             this.spaceMask = document.getElementById('space-mask');
@@ -694,25 +800,68 @@ document.addEventListener('DOMContentLoaded', () => {
         tick: function () {
             this.time += 0.016; // 60fps想定
             
-            if (analyser && !audio.paused && threeJsParticleSystem) {
+            if (analyser && !audio.paused) {
                 const freqByteData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(freqByteData);
                 
-                // 高音域の強度を計算
+                // 異なる周波数帯域で異なるレイヤーを制御
+                let lowFreqIntensity = 0;
+                let midFreqIntensity = 0;
                 let highFreqIntensity = 0;
+                
+                // 低音域（遠方の星用）
+                for (let i = 2; i < Math.min(16, freqByteData.length); i++) {
+                    lowFreqIntensity += freqByteData[i];
+                }
+                lowFreqIntensity = lowFreqIntensity / (14 * 255);
+                
+                // 中音域（中距離の星用）
                 for (let i = 16; i < Math.min(64, freqByteData.length); i++) {
+                    midFreqIntensity += freqByteData[i];
+                }
+                midFreqIntensity = midFreqIntensity / (48 * 255);
+                
+                // 高音域（近距離の星用）
+                for (let i = 64; i < Math.min(128, freqByteData.length); i++) {
                     highFreqIntensity += freqByteData[i];
                 }
-                highFreqIntensity = highFreqIntensity / (48 * 255);
+                highFreqIntensity = highFreqIntensity / (64 * 255);
                 
-                // Three.jsパーティクルシステムの更新
-                threeJsParticleSystem.material.uniforms.time.value = this.time;
-                threeJsParticleSystem.material.uniforms.audioIntensity.value = highFreqIntensity;
+                // 各レイヤーのパーティクルシステムを更新
+                if (farParticleSystem && farParticleSystem.material) {
+                    farParticleSystem.material.uniforms.time.value = this.time;
+                    farParticleSystem.material.uniforms.audioIntensity.value = lowFreqIntensity;
+                }
                 
-                // CSS マスクの動的変更
+                if (threeJsParticleSystem && threeJsParticleSystem.material) {
+                    // 中距離レイヤー（midParticleSystem）への参照を取得
+                    const midParticleSystem = threeJsParticleSystem.parent?.children?.find(child => 
+                        child.material?.uniforms?.depthFactor?.value === 0.6
+                    );
+                    if (midParticleSystem) {
+                        midParticleSystem.material.uniforms.time.value = this.time;
+                        midParticleSystem.material.uniforms.audioIntensity.value = midFreqIntensity;
+                    }
+                }
+                
+                if (nearParticleSystem && nearParticleSystem.material) {
+                    nearParticleSystem.material.uniforms.time.value = this.time;
+                    nearParticleSystem.material.uniforms.audioIntensity.value = highFreqIntensity;
+                }
+                
+                // CSS マスクの動的変更（全体的な音響強度）
                 if (this.spaceMask) {
-                    const opacity = 0.7 + highFreqIntensity * 0.3;
+                    const overallIntensity = (lowFreqIntensity + midFreqIntensity + highFreqIntensity) / 3;
+                    const opacity = 0.7 + overallIntensity * 0.3;
                     this.spaceMask.style.opacity = opacity;
+                }
+            } else {
+                // 音楽が再生されていない場合でも星は瞬く
+                if (farParticleSystem && farParticleSystem.material) {
+                    farParticleSystem.material.uniforms.time.value = this.time;
+                }
+                if (nearParticleSystem && nearParticleSystem.material) {
+                    nearParticleSystem.material.uniforms.time.value = this.time;
                 }
             }
         }
